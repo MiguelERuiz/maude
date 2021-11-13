@@ -1,0 +1,15 @@
+fmod IDNODO is
+ pr NAT .
+ sorts IdNodo ListaNodosAmigos .
+ subsort IdNodo < ListaNodosAmigos .
+ --- Declaracion de tipos para el identificador de los nodos del sistema
+ --- y la lista de ids de nodos "amigos"
+
+ op e_ : Nat -> IdNodo [ctor] .
+ op c_ : Nat -> IdNodo [ctor] .
+
+ --- Amigos del nodo extremo
+ op lav : -> ListaNodoAmigos [ctor] . --- lista vacia
+ op [_,_] : ListaNodoAmigos ListaNodoAmigos -> ListaNodoAmigos [ctor assoc comm id: lav] .
+
+endfm

@@ -1,13 +1,47 @@
 fmod RED is
  pr NAT .
+ pr STRING .
+ pr TABLA .
+ pr IDNODO .
 
  sorts Localizacion Sistema Contenidos Nodo Msj .
  subsort Localizacion < Sistema .
- *** Define los subtipos entre Contenidos y Nodo y Msj
+ subsort Nodo < Contenidos .
+ subsort Msj < Contenidos .
+ *** Define los subtipos entre Contenidos y Nodo y Msj 
+
+ ops inactivo activo : ->  EstadoCentro [ctor] .
+ ops inactivo esperando activo : -> Estado [ctor] .
+
+ --- Tipos de nodo
+ --- extremo(Id, IdLocCentro, Estado, Amigos, MsgsRecibidos)
+ op extremo : IdNodo Nat Estado ListaAmigos String -> Nodo [ctor] .
+ --- centro(Id, TablaHash)
+ op centro : IdNodo TablaHash -> Nodo [ctor] .
+
+ --- Tipos de mensaje
+ --- info(IdLocCentro, IdLocEx, IdNodoSrc)
+ op info : Nat Nat IdNodo -> Msj [ctor] .
+ --- respuesta-info(IdNodoDest)
+ op respuesta-info : IdNodo -> Msj [ctor] .
+ --- toIdNodoDest:Str
+ op to_:_ : -> IdNodo String -> Msj [ctor] .
+
 
  op none : -> Sistema [ctor] .
  op {_|_} : Nat Contenidos -> Localizacion [ctor] .
  op __ : Sistema Sistema -> Sistema [ctor assoc comm id: none] .
+
+ --- Definicion de variables 
+ vars S S' : Sistema .
+ vars IdLoc IdLoc' : Nat .
+ vars IdNodo IdNodo' : IdNodo .
+
+
+---  eq numNodos : Sistema -> Nat .
+---  op numNodos(none) -> 0.
+---  op numNodos({IdLoc|()})
+ 
 
  *** Termina de definir constructores
 endfm
