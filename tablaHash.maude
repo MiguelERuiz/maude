@@ -1,4 +1,65 @@
+--- load idNodo.maude
+
 fmod TABLA is
---- TODO definir los tipos del idNodo en un modulo aparte
+---  pr NAT .
+ pr IDNODO .
+
+ sorts ClaveValor TablaHash .
+ subsort ClaveValor < TablaHash .
+
+ *** La estructura de la tabla Hash que gestiona el nodo centro.
+ *** cada par clave-valor será de la forma <K,V> siendo K : IdNodo y V : Nat
+ op <_,_> : IdNodo Nat -> ClaveValor [ctor] .
+ op tv : -> TablaHash [ctor] .
+ op _#_ : TablaHash TablaHash -> TablaHash [ctor assoc comm id: tv] .
+
+ *** Definición de variables
+ vars T T' : TablaHash .
+ vars N N' : Nat .
+ vars I I' : IdNodo .
+ vars CV CV' : ClaveValor .
+
+ *** Definición de funciones para operar sobre la tabla hash
+
+ --- Función que comprueba si una clave está en la tabla
+ op _estaEn?_ : IdNodo TablaHash -> Bool .
+ eq I estaEn? tv = false .
+ eq I estaEn? (< I , N > # T') = true .
+ eq I estaEn? (CV' # T') = I estaEn? T' .
+
+ --- Función que devuelve el valor de un par clave-valor en
+ --- caso de que esté presente en la tabla.
+ op devuelveValor : IdNodo TablaHash -> Nat .
+ ceq devuelveValor(I, < I , N > # T') = N
+  if I estaEn? < I , N > # T' .
+
+ --- Función que inserta un par clave-valor en la tabla. Si ya
+ --- estuviera insertado, actualiza su valor.
+ op inserta : IdNodo Nat TablaHash -> TablaHash .
+ eq inserta(I, N, tv) = < I , N > .
+ ceq inserta(I, N, T) = T # < I , N >
+  if not I estaEn? T .
+ ceq inserta(I, N, < I , N' > # T) = < I , N > # T
+  if N' =/= N .
+
+ --- Función que borra un par clave-valor de la tabla.
+ --- TODO es correcta esta implementación ?? Si se le pasa una clave que
+ --- no existe en la tabla, la tabla queda como está
+ op borra : IdNodo TablaHash -> TablaHash .
+ eq borra(I, < I , N > # T') = T' .
+ eq borra(I, T) = T [owise] .
+
+ --- Tablas de prueba
+ op miTablaVacia : -> TablaHash .
+ eq miTablaVacia = tv .
+ op miTabla : -> TablaHash .
+ eq miTabla = < e 1 , 2 > #
+              < e 2 , 3 > .
 
 endfm
+
+red e(1) estaEn? miTabla .
+red e(4) estaEn? miTabla .
+red devuelveValor(e(1) , miTabla ) .
+red inserta(e(1), 2, miTablaVacia) .
+red borra(e(1), borra(e(2), miTabla)) .

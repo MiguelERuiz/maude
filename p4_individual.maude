@@ -8,18 +8,19 @@ fmod RED is
  subsort Localizacion < Sistema .
  subsort Nodo < Contenidos .
  subsort Msj < Contenidos .
- *** Define los subtipos entre Contenidos y Nodo y Msj 
+ *** Define los subtipos entre Contenidos y Nodo y Msj
 
- ops inactivo activo : ->  EstadoCentro [ctor] .
+ *** Estados de un nodo
+ --- ops inactivo activo : ->  EstadoCentro [ctor] .
  ops inactivo esperando activo : -> Estado [ctor] .
 
- --- Tipos de nodo
+ *** Tipos de nodo
  --- extremo(Id, IdLocCentro, Estado, Amigos, MsgsRecibidos)
  op extremo : IdNodo Nat Estado ListaAmigos String -> Nodo [ctor] .
  --- centro(Id, TablaHash)
  op centro : IdNodo TablaHash -> Nodo [ctor] .
 
- --- Tipos de mensaje
+ *** Tipos de mensaje
  --- info(IdLocCentro, IdLocEx, IdNodoSrc)
  op info : Nat Nat IdNodo -> Msj [ctor] .
  --- respuesta-info(IdNodoDest)
@@ -27,21 +28,26 @@ fmod RED is
  --- toIdNodoDest:Str
  op to_:_ : -> IdNodo String -> Msj [ctor] .
 
+ *** Contenidos
+ op vacio : -> Contenidos [ctor] .
+ op __ : Contenidos Contenidos -> Contenidos [ctor assoc comm id: vacio ] .
 
- op none : -> Sistema [ctor] .
+ *** Localizacion y Sistema
  op {_|_} : Nat Contenidos -> Localizacion [ctor] .
+ op none : -> Sistema [ctor] .
  op __ : Sistema Sistema -> Sistema [ctor assoc comm id: none] .
 
- --- Definicion de variables 
+ *** Definicion de variables
  vars S S' : Sistema .
  vars IdLoc IdLoc' : Nat .
- vars IdNodo IdNodo' : IdNodo .
+ vars IdN IdN' : IdNodo .
+ vars N N' : Nodo .
+ vars C C' : Contenidos .
 
-
----  eq numNodos : Sistema -> Nat .
----  op numNodos(none) -> 0.
----  op numNodos({IdLoc|()})
- 
+ *** Función que define el número de nodos de un sistema
+ eq numNodos : Sistema -> Nat .
+ op numNodos(none) = 0 .
+ op numNodos({IdLoc|N C} S') = 1 + numNodos(S') .
 
  *** Termina de definir constructores
 endfm
