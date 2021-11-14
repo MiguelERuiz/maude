@@ -5,6 +5,7 @@ fmod RED is
  pr IDNODO .
 
  sorts Localizacion Sistema Contenidos Nodo Msj .
+ sort Estado .
  subsort Localizacion < Sistema .
  subsort Nodo < Contenidos .
  subsort Msj < Contenidos .
@@ -16,7 +17,7 @@ fmod RED is
 
  *** Tipos de nodo
  --- extremo(Id, IdLocCentro, Estado, Amigos, MsgsRecibidos)
- op extremo : IdNodo Nat Estado ListaAmigos String -> Nodo [ctor] .
+ op extremo : IdNodo Nat Estado ListaNodosAmigos String -> Nodo [ctor] .
  --- centro(Id, TablaHash)
  op centro : IdNodo TablaHash -> Nodo [ctor] .
 
@@ -26,7 +27,7 @@ fmod RED is
  --- respuesta-info(IdNodoDest)
  op respuesta-info : IdNodo -> Msj [ctor] .
  --- toIdNodoDest:Str
- op to_:_ : -> IdNodo String -> Msj [ctor] .
+ op to_\:_ : IdNodo String -> Msj [ctor] .
 
  *** Contenidos
  op vacio : -> Contenidos [ctor] .
@@ -45,22 +46,35 @@ fmod RED is
  vars C C' : Contenidos .
 
  *** Función que define el número de nodos de un sistema
- eq numNodos : Sistema -> Nat .
- op numNodos(none) = 0 .
- op numNodos({IdLoc|N C} S') = 1 + numNodos(S') .
+ op numNodos : Sistema -> Nat .
+ eq numNodos(none) = 0 .
+ eq numNodos({IdLoc | N C} S') = 1 + numNodos(S') .
 
  *** Termina de definir constructores
 endfm
 
 mod COMPORTAMIENTO is
  *** Importa los modulos correspondientes
-
+ pr RED .
  *** Define el comportamiento de la red mediante reglas
+
+ --- Cuando en una misma localización tenemos un mensaje y el nodo al
+ --- que va dirigido, el mensaje se procesa
+
+ --- Cuando un mensaje va dirigido a un nodo en otra localización tenemos
+ --- las siguientes opciones:
+ ------ * Los extremos mandan su mensaje al centro.
+ ------ * El centro usa tabla hash para enviar el mensaje a la localización
+ ------   correcta.
+
+ --- <9> Comportamiento del mensaje `info'
+ --- rl [info-msg] {Term} => Term .
 endm
 
 mod EJEMPLO is
  *** Importa los modulos correspondientes
-
+ pr RED .
+ pr COMPORTAMIENTO .
  op init : -> Sistema .
  *** Define un término inicial sobre el que probar las propiedades siguiendo el enunciado
  *** red init = { 0 | ... }
