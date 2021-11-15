@@ -16,13 +16,13 @@ fmod RED is
  ops inactivo esperando activo : -> Estado [ctor] .
 
  *** Tipos de nodo
- --- extremo(Id, IdLocCentro, Estado, Amigos, MsgsRecibidos)
+ --- extremo(Id, IDLocCentro, Estado, Amigos, MsgsRecibidos)
  op extremo : IdNodo Nat Estado ListaNodosAmigos String -> Nodo [ctor] .
  --- centro(Id, TablaHash)
  op centro : IdNodo TablaHash -> Nodo [ctor] .
 
  *** Tipos de mensaje
- --- info(IdLocCentro, IdLocEx, IdNodoSrc)
+ --- info(IDLocCentro, IDLocEx, IdNodoSrc)
  op info : Nat Nat IdNodo -> Msj [ctor] .
  --- respuesta-info(IdNodoDest)
  op respuesta-info : IdNodo -> Msj [ctor] .
@@ -40,15 +40,18 @@ fmod RED is
 
  *** Definicion de variables
  vars S S' : Sistema .
- vars IdLoc IdLoc' : Nat .
+ vars IDLoc IDLocCentro : Nat .
  vars IdN IdN' : IdNodo .
  vars N N' : Nodo .
- vars C C' : Contenidos .
+ vars C C' Msgs Msgs' : Contenidos .
+ vars MsgsR MsgsR' : String .
+ vars LA LA' : ListaNodosAmigos .
+ --- vars Msg Msgs : Msj .
 
  *** Función que define el número de nodos de un sistema
  op numNodos : Sistema -> Nat .
  eq numNodos(none) = 0 .
- eq numNodos({IdLoc | N C} S') = 1 + numNodos(S') .
+ eq numNodos({IDLoc | N C} S') = 1 + numNodos(S') .
 
  *** Termina de definir constructores
 endfm
@@ -68,7 +71,18 @@ mod COMPORTAMIENTO is
  ------   correcta.
 
  --- <9> Comportamiento del mensaje `info'
- --- rl [info-msg] {Term} => Term .
+ --- TODO es necesario meter el mensaje `info' en los Contenidos
+ --- del nodo centro ???
+ --- rl [infomsg] { IDLoc | extremo(IdN, IDLocCentro, inactivo, LA, MsgsR)
+ ---                         info(IDLocCentro, IDLoc, IdN) Msgs }
+ ---               { IDLocCentro | centro(IdN', T, inactivo) Msgs' } S' =>
+ ---               { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+ ---                         respuesta-info(IdN) Msgs }
+ ---               { IDLocCentro | centro(IdN', inserta(IdN, IDLoc, T), activo)
+ ---                         Msgs' } S' .
+ --- rl [respuestainfomsg] { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+ ---                                   respuesta-info(IdN) Msgs } S' =>
+ ---                         { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR) } S' .
 endm
 
 mod EJEMPLO is
@@ -77,8 +91,11 @@ mod EJEMPLO is
  pr COMPORTAMIENTO .
  op init : -> Sistema .
  *** Define un término inicial sobre el que probar las propiedades siguiendo el enunciado
- *** red init = { 0 | ... }
- ***            { 1 | ... }
+ --- TODO no tendría que ser eq init = ... ???
+ --- red init = { 0 | centro( c(1), tv, inactivo ) }
+ ---            { 1 | extremo(e(2), 0, inactivo, [ e(3), e(4) ], "") }
+ ---            { 2 | extremo(e(3), 0, inactivo, [ e(2), e(4) ], "") }
+ ---            { 3 | extremo(e(4), 0, inactivo, [ e(2), e(3) ], "") }
  ***            ...
 endm
 
