@@ -18,8 +18,8 @@ fmod RED is
  *** Tipos de nodo
  --- extremo(Id, IDLocCentro, Estado, Amigos, MsgsRecibidos)
  op extremo : IdNodo Nat Estado ListaNodosAmigos String -> Nodo [ctor] .
- --- centro(Id, TablaHash)
- op centro : IdNodo TablaHash -> Nodo [ctor] .
+ --- centro(Id, TablaHash, Estado)
+ op centro : IdNodo TablaHash Estado -> Nodo [ctor] .
 
  *** Tipos de mensaje
  --- info(IDLocCentro, IDLocEx, IdNodoSrc)
