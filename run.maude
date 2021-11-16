@@ -1,0 +1,3 @@
+load idNodo.maude
+load tablaHash.maude
+load p4_individual.maude

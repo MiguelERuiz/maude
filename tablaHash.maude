@@ -58,8 +58,8 @@ fmod TABLA is
 
 endfm
 
-red e(1) estaEn? miTabla .
-red e(4) estaEn? miTabla .
-red devuelveValor(e(1) , miTabla ) .
-red inserta(e(1), 2, miTablaVacia) .
-red borra(e(1), borra(e(2), miTabla)) .
+red e(1) estaEn? miTabla == true .
+red e(4) estaEn? miTabla == false .
+red devuelveValor(e(1) , miTabla ) == 2 .
+red inserta(e(1), 2, miTablaVacia) == < e(1) , 2 > .
+red borra(e(1), borra(e(2), miTabla)) == tv .

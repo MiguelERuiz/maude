@@ -30,3 +30,6 @@ fmod IDNODO is
  eq misAmigos =  e(2) , e(3) , e(4) .
 
 endfm
+
+red cuantosAmigos(sinAmigos) == 0 .
+red cuantosAmigos(misAmigos) == 3 .
