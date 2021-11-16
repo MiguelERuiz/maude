@@ -59,12 +59,23 @@ endfm
 mod COMPORTAMIENTO is
  *** Importa los modulos correspondientes
  pr RED .
+
+ --- Declaración de Variables
+ vars S S' : Sistema .
+ vars IDLoc IDLoc' IDLocCentro : Nat .
+ vars IdN IdN' : IdNodo .
+ vars N N' : Nodo .
+ vars C C' Msgs Msgs' : Contenidos .
+ vars MsgsR MsgsR' : String .
+ vars LA LA' : ListaNodosAmigos .
+ var T : TablaHash .
+
  *** Define el comportamiento de la red mediante reglas
 
- --- Cuando en una misma localización tenemos un mensaje y el nodo al
+ --- TODO Cuando en una misma localización tenemos un mensaje y el nodo al
  --- que va dirigido, el mensaje se procesa
 
- --- Cuando un mensaje va dirigido a un nodo en otra localización tenemos
+ --- TODO Cuando un mensaje va dirigido a un nodo en otra localización tenemos
  --- las siguientes opciones:
  ------ * Los extremos mandan su mensaje al centro.
  ------ * El centro usa tabla hash para enviar el mensaje a la localización
@@ -72,17 +83,29 @@ mod COMPORTAMIENTO is
 
  --- <9> Comportamiento del mensaje `info'
  --- TODO es necesario meter el mensaje `info' en los Contenidos
- --- del nodo centro ???
- --- rl [infomsg] { IDLoc | extremo(IdN, IDLocCentro, inactivo, LA, MsgsR)
- ---                         info(IDLocCentro, IDLoc, IdN) Msgs }
- ---               { IDLocCentro | centro(IdN', T, inactivo) Msgs' } S' =>
- ---               { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
- ---                         respuesta-info(IdN) Msgs }
- ---               { IDLocCentro | centro(IdN', inserta(IdN, IDLoc, T), activo)
- ---                         Msgs' } S' .
- --- rl [respuestainfomsg] { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
- ---                                   respuesta-info(IdN) Msgs } S' =>
- ---                         { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR) } S' .
+ --- del nodo centro ??? CREO QUE NO POR EL ENUNCIADO DEL EJERCICIO <7>
+ rl [info-msg] : { IDLoc | extremo(IdN, IDLocCentro, inactivo, LA, MsgsR)
+                         info(IDLocCentro, IDLoc, IdN) Msgs }
+               { IDLocCentro | centro(IdN', T, inactivo) Msgs' } S' =>
+               { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+                         respuesta-info(IdN) Msgs }
+               { IDLocCentro | centro(IdN', inserta(IdN, IDLoc, T), activo)
+                         Msgs' } S' .
+
+ --- <10> Comportamiento del mensaje `respuesta-info'
+ rl [respuesta-info-msg] : { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+                                   respuesta-info(IdN) Msgs } S' =>
+                         { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR) Msgs } S' .
+
+ --- <11> Comportamiento del envío del mensaje `to_:_'
+ --- TODO es necesario comprobar que el nodo "amigo" esté activo para poder
+ --- enviarle su correspondiente mensaje ???
+
+ --- <12> Comportamiento del recibo del mensaje `to_:_'
+ rl [recibe-to-msg] : { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR')
+                                   toIDLoc:MsgsR Msgs } S' =>
+                      { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR' + MsgsR)
+                                   Msgs } S' .
 endm
 
 mod EJEMPLO is
@@ -92,10 +115,10 @@ mod EJEMPLO is
  op init : -> Sistema .
  *** Define un término inicial sobre el que probar las propiedades siguiendo el enunciado
  --- TODO no tendría que ser eq init = ... ???
- --- red init = { 0 | centro( c(1), tv, inactivo ) }
- ---            { 1 | extremo(e(2), 0, inactivo, [ e(3), e(4) ], "") }
- ---            { 2 | extremo(e(3), 0, inactivo, [ e(2), e(4) ], "") }
- ---            { 3 | extremo(e(4), 0, inactivo, [ e(2), e(3) ], "") }
+ eq init =  { 0 | centro( c(1), tv, inactivo ) }
+            { 1 | extremo(e(2), 0, inactivo, [ e(3), e(4) ], "") }
+            { 2 | extremo(e(3), 0, inactivo, [ e(2), e(4) ], "") }
+            { 3 | extremo(e(4), 0, inactivo, [ e(2), e(3) ], "") }
  ***            ...
 endm
 
