@@ -11,6 +11,22 @@ fmod IDNODO is
 
  --- Amigos del nodo extremo
  op lav : -> ListaNodosAmigos [ctor] . --- lista vacia
- op [_,_] : ListaNodosAmigos ListaNodosAmigos -> ListaNodosAmigos [ctor assoc comm id: lav] .
+ op _,_ : ListaNodosAmigos ListaNodosAmigos -> ListaNodosAmigos [ctor assoc id: lav] .
+
+ *** Declaración de variables
+ var I : IdNodo .
+ var L : ListaNodosAmigos .
+
+ *** Declaración de funciones
+ --- Función que devuelve la longitud de una lista
+ op cuantosAmigos : ListaNodosAmigos -> Nat .
+ eq cuantosAmigos(lav) = 0 .
+ eq cuantosAmigos( I , L ) = 1 + cuantosAmigos(L) .
+
+ op sinAmigos : -> ListaNodosAmigos .
+ eq sinAmigos = lav .
+
+ op misAmigos : -> ListaNodosAmigos .
+ eq misAmigos =  e(2) , e(3) , e(4) .
 
 endfm
