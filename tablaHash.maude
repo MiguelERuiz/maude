@@ -39,8 +39,7 @@ fmod TABLA is
  eq inserta(I, N, tv) = < I , N > .
  ceq inserta(I, N, T) = T # < I , N >
   if not I estaEn? T .
- ceq inserta(I, N, < I , N' > # T) = < I , N > # T
-  if N' =/= N .
+ eq inserta(I, N, < I , N > # T') = < I , N > # T' [owise] .
 
  --- Función que borra un par clave-valor de la tabla.
  --- TODO es correcta esta implementación ?? Si se le pasa una clave que
@@ -62,4 +61,5 @@ red e(1) estaEn? miTabla == true .
 red e(4) estaEn? miTabla == false .
 red devuelveValor(e(1) , miTabla ) == 2 .
 red inserta(e(1), 2, miTablaVacia) == < e(1) , 2 > .
+red inserta(e 4, 3, inserta(e 3, 2, inserta(e 2, 1, < e 2,1 >))) == < e 2 , 1 > # < e 3 , 2 > # < e 4 , 3 > .
 red borra(e(1), borra(e(2), miTabla)) == tv .
