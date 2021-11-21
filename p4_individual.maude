@@ -66,10 +66,10 @@ mod COMPORTAMIENTO is
 
  --- Declaración de Variables
  vars S S' : Sistema .
- vars IDLoc IDLoc' IDLocCentro : Nat .
+ vars IDLoc IDLoc' IDLocCentro IDLocRes : Nat .
  vars IdN IdN' IdN'' : IdNodo .
  vars N N' : Nodo .
- vars C C' Msgs Msgs' Msgs'' : Contenidos .
+ vars C C' Msgs Msgs' Msgs'' ContEx : Contenidos .
  vars MsgsR MsgsR' : String .
  vars LA LA' : ListaNodosAmigos .
  var T T' : TablaHash .
@@ -93,9 +93,9 @@ mod COMPORTAMIENTO is
                                         info(IDLocCentro, IDLoc, IdN) Msgs } .
 
   rl [ex-envia-info-msg-1] : { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
-                                    info(IDLocCentro, IDLoc, IdN) Msgs }
+                                        info(IDLocCentro, IDLoc, IdN) Msgs }
                              { IDLocCentro | centro(IdN', T, E) Msgs' } =>
-                        { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR) Msgs }
+                             { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR) Msgs }
                              { IDLocCentro | centro(IdN', T, E)
                                               info(IDLocCentro, IDLoc, IdN) Msgs' } .
 
@@ -127,7 +127,7 @@ mod COMPORTAMIENTO is
                                                 respuesta-info(IdN') } .
 
  --- <10> Comportamiento del mensaje `respuesta-info'
- rl [respuesta-info-msg] : { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+  rl [respuesta-info-msg] : { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
                                       respuesta-info(IdN) Msgs } =>
                             { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR) Msgs } .
 
@@ -146,21 +146,14 @@ mod COMPORTAMIENTO is
                                     Msgs }
                         { IDLocCentro | centro(IdN', T, activo)
                                             ( to ( IdN'' ) \:  MsgsR' ) Msgs' } .
-
   *** El nodo central, valiéndose de su tabla hash, enviará el mensaje to_:_
   *** al nodo extremo destinatario
-  crl [envio-to-msg-centro] : { IDLocCentro | centro(IdN, T, activo)
-                                          ( to ( IdN' ) \:  MsgsR ) Msgs }
-                              { IDLoc' | extremo(IdN', IDLocCentro, activo, LA, MsgsR')
-                                            Msgs' } S' =>
-                              { IDLocCentro | centro(IdN', T, activo)
-                                                Msgs }
-endm
- --- <12> Comportamiento del recibo del mensaje `to_:_'
- rl [recibe-to-msg] : { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR')
-                                    ( to ( IdN ) \:  MsgsR ) Msgs } S' =>
-                      { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR' + MsgsR)
-                                    Msgs } S' .
+  --- DEBUG
+  crl [c-envia-to-msg-ex] : { IDLocCentro | C centro(IdN, T, activo) ( to ( IdN' ) \:  MsgsR' ) Msgs }
+                           { IDLoc' | ContEx } =>
+                           { IDLocCentro | C centro(IdN, T, activo) Msgs }
+                          { IDLoc' | ContEx ( to ( IdN' ) \:  MsgsR' ) }
+    if devuelveValor(IdN', T) == IDLoc' .
 endm
 
 mod EJEMPLO is
