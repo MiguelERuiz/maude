@@ -1,33 +1,30 @@
 fmod IDNODO is
- pr NAT .
+  pr STRING .
 
- sorts IdNodo ListaNodosAmigos .
- subsort IdNodo < ListaNodosAmigos .
+ sort ListaNodosAmigos .
+ subsort String < ListaNodosAmigos .
  --- Declaracion de tipos para el identificador de los nodos del sistema
  --- y la lista de ids de nodos "amigos"
-
- op e_ : Nat -> IdNodo [ctor] .
- op c_ : Nat -> IdNodo [ctor] .
 
  --- Amigos del nodo extremo
  op lav : -> ListaNodosAmigos [ctor] . --- lista vacia
  op _,_ : ListaNodosAmigos ListaNodosAmigos -> ListaNodosAmigos [ctor assoc id: lav] .
 
  *** Declaración de variables
- var I : IdNodo .
+ var S : String .
  var L : ListaNodosAmigos .
 
  *** Declaración de funciones
  --- Función que devuelve la longitud de una lista
  op cuantosAmigos : ListaNodosAmigos -> Nat .
  eq cuantosAmigos(lav) = 0 .
- eq cuantosAmigos( I , L ) = 1 + cuantosAmigos(L) .
+ eq cuantosAmigos( S , L ) = 1 + cuantosAmigos(L) .
 
  op sinAmigos : -> ListaNodosAmigos .
  eq sinAmigos = lav .
 
  op misAmigos : -> ListaNodosAmigos .
- eq misAmigos =  e(2) , e(3) , e(4) .
+ eq misAmigos =  "2" , "3" , "4" .
 
 endfm
 

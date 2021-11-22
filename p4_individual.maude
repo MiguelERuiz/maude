@@ -1,5 +1,4 @@
 fmod RED is
- pr NAT .
  pr STRING .
  pr TABLA .
  pr IDNODO .
@@ -17,17 +16,17 @@ fmod RED is
 
  *** Tipos de nodo
  --- extremo(Id, IDLocCentro, Estado, Amigos, MsgsRecibidos)
- op extremo : IdNodo Nat Estado ListaNodosAmigos String -> Nodo [ctor] .
+ op extremo : String Nat Estado ListaNodosAmigos String -> Nodo [ctor] .
  --- centro(Id, TablaHash, Estado)
- op centro : IdNodo TablaHash Estado -> Nodo [ctor] .
+ op centro : String TablaHash Estado -> Nodo [ctor] .
 
  *** Tipos de mensaje
  --- info(IDLocCentro, IDLocEx, IdNodoSrc)
- op info : Nat Nat IdNodo -> Msj [ctor] .
+ op info : Nat Nat String -> Msj [ctor] .
  --- respuesta-info(IdNodoDest)
- op respuesta-info : IdNodo -> Msj [ctor] .
+ op respuesta-info : String -> Msj [ctor] .
  --- toIdNodoDest:Str
- op to_\:_ : IdNodo String -> Msj [ctor] .
+ op to_\:_ : String String -> Msj [ctor] .
 
  *** Contenidos
  op vacio : -> Contenidos [ctor] .
@@ -41,7 +40,7 @@ fmod RED is
  *** Definicion de variables
  vars S S' : Sistema .
  vars IDLoc IDLocCentro : Nat .
- vars IdN IdN' : IdNodo .
+ vars IdN IdN' : String .
  vars N N' : Nodo .
  vars C C' Msgs Msgs' : Contenidos .
  vars MsgsR MsgsR' : String .
@@ -58,7 +57,6 @@ endfm
 
 mod COMPORTAMIENTO is
  *** Importa los modulos correspondientes
- pr NAT .
  pr STRING .
  pr TABLA .
  pr IDNODO .
@@ -67,7 +65,7 @@ mod COMPORTAMIENTO is
  --- Declaración de Variables
  vars S S' : Sistema .
  vars IDLoc IDLoc' IDLocCentro IDLocRes : Nat .
- vars IdN IdN' IdN'' : IdNodo .
+ vars IdN IdN' IdN'' : String .
  vars N N' : Nodo .
  vars C C' Msgs Msgs' Msgs'' ContEx : Contenidos .
  vars MsgsR MsgsR' : String .
@@ -149,11 +147,19 @@ mod COMPORTAMIENTO is
   *** El nodo central, valiéndose de su tabla hash, enviará el mensaje to_:_
   *** al nodo extremo destinatario
   --- DEBUG
-  crl [c-envia-to-msg-ex] : { IDLocCentro | C centro(IdN, T, activo) ( to ( IdN' ) \:  MsgsR' ) Msgs }
-                           { IDLoc' | ContEx } =>
-                           { IDLocCentro | C centro(IdN, T, activo) Msgs }
-                          { IDLoc' | ContEx ( to ( IdN' ) \:  MsgsR' ) }
-    if devuelveValor(IdN', T) == IDLoc' .
+  crl [c-envia-to-msg-ex] : { IDLocCentro | centro(IdN, T, activo) ( to ( IdN' ) \:  MsgsR' ) Msgs }
+                            { IDLoc | extremo(IdN', IDLocCentro, activo, LA, MsgsR) } =>
+                            { IDLocCentro | centro(IdN, T, activo) Msgs }
+                            { IDLoc' | extremo(IdN', IDLocCentro, activo, LA, MsgsR) ( to ( IdN' ) \:  MsgsR' ) }
+    if IDLoc' := devuelveValor(IdN', T) .
+
+  --- <12> Comportamiento del recibo del mensaje `to_:_'
+---  DEBUG
+ rl [recibe-to-msg] : { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR')
+                                    ( to ( IdN ) \:  MsgsR ) Msgs } =>
+                      { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR' + MsgsR)
+                                    Msgs } .
+
 endm
 
 mod EJEMPLO is
@@ -162,10 +168,10 @@ mod EJEMPLO is
  pr COMPORTAMIENTO .
  op init : -> Sistema .
  *** Define un término inicial sobre el que probar las propiedades siguiendo el enunciado
- eq init =  { 0 | centro( c(1), tv, inactivo ) }
-             { 1 | extremo(e(2), 0, inactivo, e(3), e(4) , "") }
-             { 2 | extremo(e(3), 0, inactivo, e(2), e(4) , "") }
-             { 3 | extremo(e(4), 0, inactivo, e(2), e(3) , "") } .
+ eq init =  { 0 | centro( "2", tv, inactivo ) }
+             { 1 | extremo("2", 0, inactivo, ("3", "4") , "") }
+             { 2 | extremo("3", 0, inactivo, ("2", "4") , "") }
+             { 3 | extremo("4", 0, inactivo, ("2", "3") , "") } .
  ***            ...
 endm
 
@@ -173,10 +179,10 @@ rew init .
 
 search [1] init =>+ S:Sistema s.t. numNodos(init) =/= numNodos(S:Sistema) .
 
-search init =>+ { 0 | centro( c(1), T:TablaHash, activo ) }
-                { 1 | extremo( e(2), 0, activo, lav , "holahola" ) }
-                { 2 | extremo( e(3), 0, activo, lav , "holahola" ) }
-                { 3 | extremo( e(4), 0, activo, lav , "holahola" ) } .
+search init =>+ { 0 | centro( "1", T:TablaHash, activo ) }
+                { 1 | extremo( "2", 0, activo, lav , "holahola" ) }
+                { 2 | extremo( "3", 0, activo, lav , "holahola" ) }
+                { 3 | extremo( "4", 0, activo, lav , "holahola" ) } .
 
 load model-checker
 
