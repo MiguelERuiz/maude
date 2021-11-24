@@ -82,12 +82,14 @@ mod COMPORTAMIENTO is
   ------   correcta.
 
   *** <9> Comportamiento del mensaje info
-  *** TODO COMPLETAR comportamiento
+  *** El mensaje info lo envían los extremos en estado inactivo para indicar
+  *** su direccion y su nombre.
   rl [ex-genera-info-msg] : { IDLoc | extremo(IdN, IDLocCentro, inactivo, LA, MsgsR)
                                         Msgs } =>
                             { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
                                         info(IDLocCentro, IDLoc, IdN) Msgs } .
 
+  *** Al enviarlo, el extremo pasa al estado esperando
   rl [ex-envia-info-msg] :  { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
                                         info(IDLocCentro, IDLoc, IdN) Msgs }
                             { IDLocCentro | centro(IdN', T, E) Msgs' } =>
@@ -95,11 +97,13 @@ mod COMPORTAMIENTO is
                             { IDLocCentro | centro(IdN', T, E)
                                               info(IDLocCentro, IDLoc, IdN) Msgs' } .
 
+  *** El centro pasa de inactivo a activo en cuanto recibe uno de estos mensajes.
   rl [c-recibe-info-msg] :  { IDLocCentro | centro(IdN', T, E)
                                               info(IDLocCentro, IDLoc, IdN) Msgs' } =>
                             { IDLocCentro | centro(IdN', inserta(IdN, IDLoc, T), activo)
                                               respuesta-info(IdN) Msgs' } .
 
+  *** El centro genera el mensaje respuesta-info al extremo como respuesta
   rl [c-envia-respuesta-info-msg] : { IDLocCentro | centro(IdN, T , E)
                                                       respuesta-info(IdN') Msgs }
                                     { IDLoc | extremo(IdN', IDLocCentro, esperando, LA, MsgsR) Msgs' } =>
@@ -139,7 +143,8 @@ mod COMPORTAMIENTO is
                             { IDLoc | ( to ( IdN' ) :  MsgsR' ) Msgs' } .
 
   *** <12> Comportamiento del recibo del mensaje to_:_
-  *** TODO COMPLETAR comportamiento
+  *** Cuando un mensaje to_:_ llega a un nodo el mensaje se concatena
+  *** a lo que ya habíamos recibido.
   rl [recibe-to-msg] :  { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR')
                                     ( to ( IdN ) :  MsgsR ) Msgs } =>
                         { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR' + MsgsR)
