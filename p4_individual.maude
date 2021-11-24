@@ -176,17 +176,65 @@ search init =>+ { 0 | centro( "1", T:TablaHash, activo ) }
 load model-checker
 
 mod PROPS is
- *** Importa los modulos correspondientes
+  *** Importa los modulos correspondientes
+  pr SATISFACTION .
+  pr RED .
+  pr COMPORTAMIENTO .
+  subsort Sistema < State .
 
- *** Define las propiedades
+  *** Definición de variables
+  vars IDLoc IDLocCentro : Nat .
+  var X : Nat .
+  var N : Nodo .
+  var E : Estado .
+  var T : TablaHash .
+  var LA LA' : ListaNodosAmigos .
+  vars IdN IdN' : String .
+  vars MsgsR MsgR : String .
+  var Cs : Contenidos .
+  var S : Sistema .
+
+  *** Define las propiedades
+  op existeNodo : String -> Prop [ctor] .
+  op sonAmigos : String String -> Prop [ctor] .
+  op existeToMsgParaNodo : String -> Prop [ctor] .
+  op nodosTotales : Nat -> Prop [ctor] .
+  op nodosExternos : Nat -> Prop [ctor] .
+
+  *** Define las propiedades con ecuaciones
+  --- op _|=_ : State Prop -> Bool .
+  eq S { IDLoc | extremo(IdN, IDLocCentro, E, LA, MsgsR) Cs } |= existeNodo(IdN) = true .
+  eq S { IDLoc | centro(IdN, T, E) Cs } |= existeNodo(IdN) = true .
+  eq S { IDLoc | extremo(IdN, IDLocCentro, E, (LA, IdN', LA'), MsgsR) Cs } |= sonAmigos(IdN, IdN') = true .
+  eq S { IDLoc | (to IdN : MsgR) Cs } |= existeToMsgParaNodo(IdN) = true .
+  eq S |= nodosTotales(X) = numNodos(S) == X .
+  eq S |= nodosExternos(X) = sd(numNodos(S),1) == X .
 endm
 
 mod TEST is
- *** Importa los modulos correspondientes
+  *** Importa los modulos correspondientes
+  pr PROPS .
+  pr LTL-SIMPLIFIER .
+  pr MODEL-CHECKER .
+  pr EJEMPLO .
+
 endm
 
-eof
-
 *** Define y comprueba las propiedades
+*** <17> Comprobación de propiedades
+--- La cantidad de nodos no varía
+red modelCheck(init, [] nodosTotales(4)) .
+red modelCheck(init, [] nodosExternos(3)) .
 
---- red modelCheck(init, ...) .
+--- Si un nodo existe y otro lo tiene como amigo, le acaba mandando un mensaje.
+red modelCheck(init, [] (existeNodo("2") /\ sonAmigos("2", "3") -> <> existeToMsgParaNodo("3"))) .
+red modelCheck(init, [] (existeNodo("2") /\ sonAmigos("2", "4") -> <> existeToMsgParaNodo("4"))) .
+red modelCheck(init, [] (existeNodo("3") /\ sonAmigos("3", "2") -> <> existeToMsgParaNodo("2"))) .
+red modelCheck(init, [] (existeNodo("3") /\ sonAmigos("3", "4") -> <> existeToMsgParaNodo("4"))) .
+red modelCheck(init, [] (existeNodo("4") /\ sonAmigos("4", "2") -> <> existeToMsgParaNodo("2"))) .
+red modelCheck(init, [] (existeNodo("4") /\ sonAmigos("4", "3") -> <> existeToMsgParaNodo("3"))) .
+
+--- Cualquier mensaje acaba desapareciendo.
+red modelCheck(init, <> [] ~ existeToMsgParaNodo("2")) .
+red modelCheck(init, <> [] ~ existeToMsgParaNodo("3")) .
+red modelCheck(init, <> [] ~ existeToMsgParaNodo("4")) .
