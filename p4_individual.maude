@@ -102,10 +102,10 @@ mod COMPORTAMIENTO is
 
   rl [c-envia-respuesta-info-msg] : { IDLocCentro | centro(IdN, T , E)
                                                       respuesta-info(IdN') Msgs }
-                                    { IDLoc | extremo(IdN', IDLocCentro, esperando, LA, MsgsR) } =>
+                                    { IDLoc | extremo(IdN', IDLocCentro, esperando, LA, MsgsR) Msgs' } =>
                                     { IDLocCentro | centro(IdN, T , E) Msgs }
                                     { IDLoc | extremo(IdN', IDLocCentro, esperando, LA, MsgsR)
-                                                respuesta-info(IdN') } .
+                                                respuesta-info(IdN') Msgs' } .
 
   *** <10> Comportamiento del mensaje respuesta-info
   *** Cuando un extremo en estado 'esperando' recibe un mensaje respueta-info
