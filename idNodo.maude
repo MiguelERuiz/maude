@@ -1,0 +1,32 @@
+fmod LISTAAMIGOS is
+  pr STRING .
+
+  sort ListaNodosAmigos .
+  subsort String < ListaNodosAmigos .
+  --- Declaracion de tipos para el identificador de los nodos del sistema
+  --- y la lista de ids de nodos "amigos"
+
+  --- Amigos del nodo extremo
+  op lav : -> ListaNodosAmigos [ctor] . --- lista vacia
+  op _,_ : ListaNodosAmigos ListaNodosAmigos -> ListaNodosAmigos [ctor assoc id: lav] .
+
+  *** Declaración de variables
+  var S : String .
+  var L : ListaNodosAmigos .
+
+  *** Declaración de funciones
+  --- Función que devuelve la longitud de una lista
+  op cuantosAmigos : ListaNodosAmigos -> Nat .
+  eq cuantosAmigos(lav) = 0 .
+  eq cuantosAmigos( S , L ) = 1 + cuantosAmigos(L) .
+
+  op sinAmigos : -> ListaNodosAmigos .
+  eq sinAmigos = lav .
+
+  op misAmigos : -> ListaNodosAmigos .
+  eq misAmigos =  "2" , "3" , "4" .
+
+endfm
+
+red cuantosAmigos(sinAmigos) == 0 .
+red cuantosAmigos(misAmigos) == 3 .

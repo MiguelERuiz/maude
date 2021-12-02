@@ -1,0 +1,51 @@
+--- load idNodo.maude
+
+fmod TABLA is
+
+  pr STRING .
+
+  sorts ClaveValor TablaHash .
+  subsort ClaveValor < TablaHash .
+
+  *** La estructura de la tabla Hash que gestiona el nodo centro.
+  *** cada par clave-valor será de la forma <K,V> siendo K : String y V : Nat
+  op <_,_> : String Nat -> ClaveValor [ctor] .
+  op tv : -> TablaHash [ctor] .
+  op _#_ : TablaHash TablaHash -> TablaHash [ctor assoc comm id: tv] .
+
+  *** Definición de variables
+  vars T T' : TablaHash .
+  vars N N' : Nat .
+  vars S S' : String .
+  vars CV CV' : ClaveValor .
+
+  *** Definición de funciones para operar sobre la tabla hash
+
+  --- Función que comprueba si una clave está en la tabla
+  op _estaEn?_ : String TablaHash -> Bool .
+  eq S estaEn? tv = false .
+  eq S estaEn? (< S , N > # T') = true .
+  eq S estaEn? (CV' # T') = S estaEn? T' .
+
+  --- Función que inserta un par clave-valor en la tabla. Si ya
+  --- estuviera insertado, actualiza su valor.
+  op inserta : String Nat TablaHash -> TablaHash .
+  eq inserta(S, N, tv) = < S , N > .
+  ceq inserta(S, N, T) = T # < S , N >
+    if not S estaEn? T .
+  eq inserta(S, N, < S , N > # T') = < S , N > # T' [owise] .
+
+  --- Tablas de prueba
+  op miTablaVacia : -> TablaHash .
+  eq miTablaVacia = tv .
+  op miTabla : -> TablaHash .
+  eq miTabla = < "1" , 2 > #
+              < "2" , 3 > .
+
+endfm
+
+red "1" estaEn? miTabla == true .
+red "4" estaEn? miTabla == false .
+red inserta("1", 2, miTablaVacia) == < "1" , 2 > .
+red inserta("4", 3, inserta("3", 2, inserta("2", 1, < "2",1 >))) == < "2" , 1 > # < "3" , 2 > # < "4" , 3 > .
+red inserta("4", 3, inserta("3", 2, inserta("2", 1, tv))) == < "2" , 1 > # < "3" , 2 > # < "4" , 3 > .

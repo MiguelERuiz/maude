@@ -1,51 +1,240 @@
 fmod RED is
- pr NAT .
+  pr STRING .
+  pr TABLA .
+  pr LISTAAMIGOS .
 
- sorts Localizacion Sistema Contenidos Nodo Msj .
- subsort Localizacion < Sistema .
- *** Define los subtipos entre Contenidos y Nodo y Msj
+  sorts Localizacion Sistema Contenidos Nodo Msj Estado .
+  subsort Localizacion < Sistema .
+  *** Define los subtipos entre Contenidos y Nodo y Msj
+  subsort Nodo < Contenidos .
+  subsort Msj < Contenidos .
 
- op none : -> Sistema [ctor] .
- op {_|_} : Nat Contenidos -> Localizacion [ctor] .
- op __ : Sistema Sistema -> Sistema [ctor assoc comm id: none] .
+  *** Localizacion y Sistema
+  op {_|_} : Nat Contenidos -> Localizacion [ctor] .
+  op none : -> Sistema [ctor] .
+  op __ : Sistema Sistema -> Sistema [ctor assoc comm id: none] .
 
- *** Termina de definir constructores
+  *** Definicion de variables
+  vars S S' : Sistema .
+  vars IDLoc IDLocCentro : Nat .
+  vars IdN IdN' : String .
+  vars N N' : Nodo .
+  vars C C' Msgs Msgs' : Contenidos .
+  vars MsgsR MsgsR' : String .
+  vars LA LA' : ListaNodosAmigos .
+
+  *** Función que define el número de nodos de un sistema
+  op numNodos : Sistema -> Nat .
+  eq numNodos(none) = 0 .
+  eq numNodos({IDLoc | N C} S') = 1 + numNodos(S') .
+
+  *** Termina de definir constructores
+  *** Estados de un nodo
+  ops inactivo esperando activo : -> Estado [ctor] .
+
+  *** Tipos de nodo
+  --- extremo(Id, IDLocCentro, Estado, Amigos, MsgsRecibidos)
+  op extremo : String Nat Estado ListaNodosAmigos String -> Nodo [ctor] .
+  --- centro(Id, TablaHash, Estado)
+  op centro : String TablaHash Estado -> Nodo [ctor] .
+
+  *** Tipos de mensaje
+  --- info(IDLocCentro, IDLocEx, IdNodoSrc)
+  op info : Nat Nat String -> Msj [ctor] .
+  --- respuesta-info(IdNodoDest)
+  op respuesta-info : String -> Msj [ctor] .
+  --- toIdNodoDest:Str
+  op to_:_ : String String -> Msj [ctor] .
+
+  *** Contenidos
+  op vacio : -> Contenidos [ctor] .
+  op __ : Contenidos Contenidos -> Contenidos [ctor assoc comm id: vacio ] .
+
 endfm
 
 mod COMPORTAMIENTO is
- *** Importa los modulos correspondientes
+  *** Importa los modulos correspondientes
+  pr STRING .
+  pr TABLA .
+  pr LISTAAMIGOS .
+  pr RED .
 
- *** Define el comportamiento de la red mediante reglas
+  --- Declaración de Variables
+  vars S S' : Sistema .
+  vars IDLoc IDLoc' IDLocCentro IDLocRes : Nat .
+  vars IdN IdN' IdN'' : String .
+  vars N N' : Nodo .
+  vars Msgs Msgs' Msgs'' : Contenidos .
+  vars MsgsR MsgsR' : String .
+  vars LA LA' : ListaNodosAmigos .
+  var T T' : TablaHash .
+  var E : Estado .
+
+  *** Define el comportamiento de la red mediante reglas
+
+  --- Cuando en una misma localización tenemos un mensaje y el nodo al
+  --- que va dirigido, el mensaje se procesa
+
+  --- Cuando un mensaje va dirigido a un nodo en otra localización tenemos
+  --- las siguientes opciones:
+  ------ * Los extremos mandan su mensaje al centro.
+  ------ * El centro usa tabla hash para enviar el mensaje a la localización
+  ------   correcta.
+
+  *** <9> Comportamiento del mensaje info
+  *** El mensaje info lo envían los extremos en estado inactivo para indicar
+  *** su direccion y su nombre.
+  rl [ex-genera-info-msg] : { IDLoc | extremo(IdN, IDLocCentro, inactivo, LA, MsgsR)
+                                        Msgs } =>
+                            { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+                                        info(IDLocCentro, IDLoc, IdN) Msgs } .
+
+  *** Al enviarlo, el extremo pasa al estado esperando
+  rl [ex-envia-info-msg] :  { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+                                        info(IDLocCentro, IDLoc, IdN) Msgs }
+                            { IDLocCentro | centro(IdN', T, E) Msgs' } =>
+                            { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR) Msgs }
+                            { IDLocCentro | centro(IdN', T, E)
+                                              info(IDLocCentro, IDLoc, IdN) Msgs' } .
+
+  *** El centro pasa de inactivo a activo en cuanto recibe uno de estos mensajes.
+  rl [c-recibe-info-msg] :  { IDLocCentro | centro(IdN', T, E)
+                                              info(IDLocCentro, IDLoc, IdN) Msgs' } =>
+                            { IDLocCentro | centro(IdN', inserta(IdN, IDLoc, T), activo)
+                                              respuesta-info(IdN) Msgs' } .
+
+  *** El centro genera el mensaje respuesta-info al extremo como respuesta
+  rl [c-envia-respuesta-info-msg] : { IDLocCentro | centro(IdN, T , E)
+                                                      respuesta-info(IdN') Msgs }
+                                    { IDLoc | extremo(IdN', IDLocCentro, esperando, LA, MsgsR) Msgs' } =>
+                                    { IDLocCentro | centro(IdN, T , E) Msgs }
+                                    { IDLoc | extremo(IdN', IDLocCentro, esperando, LA, MsgsR)
+                                                respuesta-info(IdN') Msgs' } .
+
+  *** <10> Comportamiento del mensaje respuesta-info
+  *** Cuando un extremo en estado 'esperando' recibe un mensaje respueta-info
+  *** este cambia su estado a 'activo'
+  rl [respuesta-info-msg] : { IDLoc | extremo(IdN, IDLocCentro, esperando, LA, MsgsR)
+                                        respuesta-info(IdN) Msgs } =>
+                            { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR) Msgs } .
+
+  *** <11> Comportamiento del envío del mensaje to_:_
+  *** El extremo genera un mensaje to_:_  para un amigo.
+  *** Tras generarlo, se borra al amigo de la lista.
+  rl [ex-genera-to-msg] : extremo(IdN, IDLocCentro, activo, (IdN'' , LA), MsgsR)  =>
+                          extremo(IdN, IDLocCentro, activo, LA, MsgsR)
+                            ( to ( IdN'' ) :  "hola" ) .
+
+  *** El extremo envía el mensaje to_:_ al nodo central.
+  crl [ex-envia-to-msg-c] : { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR)
+                                        ( to ( IdN'' ) :  MsgsR' ) Msgs }
+                            { IDLocCentro | centro(IdN', T, activo) Msgs' } =>
+                            { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR)
+                                        Msgs }
+                            { IDLocCentro | centro(IdN', T, activo)
+                                              ( to ( IdN'' ) :  MsgsR' ) Msgs' }
+    if IdN'' =/= IdN .
+
+  *** El nodo central, valiéndose de su tabla hash, enviará el mensaje to_:_
+  *** al nodo extremo destinatario.
+  rl [c-envia-to-msg-ex] : { IDLocCentro | centro(IdN, T # < IdN', IDLoc >, activo) ( to ( IdN' ) :  MsgsR' ) Msgs }
+                            { IDLoc | Msgs' } =>
+                            { IDLocCentro | centro(IdN, T # < IdN', IDLoc >, activo) Msgs }
+                            { IDLoc | ( to ( IdN' ) :  MsgsR' ) Msgs' } .
+
+  *** <12> Comportamiento del recibo del mensaje to_:_
+  *** Cuando un mensaje to_:_ llega a un nodo el mensaje se concatena
+  *** a lo que ya habíamos recibido.
+  rl [recibe-to-msg] :  { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR')
+                                    ( to ( IdN ) :  MsgsR ) Msgs } =>
+                        { IDLoc | extremo(IdN, IDLocCentro, activo, LA, MsgsR' + MsgsR)
+                                    Msgs } .
+
 endm
 
 mod EJEMPLO is
- *** Importa los modulos correspondientes
-
- op init : -> Sistema .
- *** Define un término inicial sobre el que probar las propiedades siguiendo el enunciado
- *** red init = { 0 | ... }
- ***            { 1 | ... }
- ***            ...
+  *** Importa los modulos correspondientes
+  pr RED .
+  pr COMPORTAMIENTO .
+  op init : -> Sistema .
+  *** Define un término inicial sobre el que probar las propiedades siguiendo el enunciado
+  eq init =   { 0 | centro( "1", tv, inactivo ) }
+              { 1 | extremo("2", 0, inactivo, ("3", "4") , "") }
+              { 2 | extremo("3", 0, inactivo, ("2", "4") , "") }
+              { 3 | extremo("4", 0, inactivo, ("2", "3") , "") } .
 endm
 
 rew init .
 
-*** search init ...
+search [1] init =>+ S:Sistema s.t. numNodos(init) =/= numNodos(S:Sistema) .
+
+search init =>+ { 0 | centro( "1", T:TablaHash, activo ) }
+                { 1 | extremo( "2", 0, activo, lav , "holahola" ) }
+                { 2 | extremo( "3", 0, activo, lav , "holahola" ) }
+                { 3 | extremo( "4", 0, activo, lav , "holahola" ) } .
 
 load model-checker
 
 mod PROPS is
- *** Importa los modulos correspondientes
+  *** Importa los modulos correspondientes
+  pr SATISFACTION .
+  pr RED .
+  pr COMPORTAMIENTO .
+  subsort Sistema < State .
 
- *** Define las propiedades
+  *** Definición de variables
+  vars IDLoc IDLocCentro : Nat .
+  var X : Nat .
+  var N : Nodo .
+  var E : Estado .
+  var T : TablaHash .
+  var LA LA' : ListaNodosAmigos .
+  vars IdN IdN' : String .
+  vars MsgsR MsgR : String .
+  var Cs : Contenidos .
+  var S : Sistema .
+
+  *** Define las propiedades
+  op existeNodo : String -> Prop [ctor] .
+  op sonAmigos : String String -> Prop [ctor] .
+  op existeToMsgParaNodo : String -> Prop [ctor] .
+  op nodosTotales : Nat -> Prop [ctor] .
+  op nodosExternos : Nat -> Prop [ctor] .
+
+  *** Define las propiedades con ecuaciones
+  --- op _|=_ : State Prop -> Bool .
+  eq S { IDLoc | extremo(IdN, IDLocCentro, E, LA, MsgsR) Cs } |= existeNodo(IdN) = true .
+  eq S { IDLoc | centro(IdN, T, E) Cs } |= existeNodo(IdN) = true .
+  eq S { IDLoc | extremo(IdN, IDLocCentro, E, (LA, IdN', LA'), MsgsR) Cs } |= sonAmigos(IdN, IdN') = true .
+  eq S { IDLoc | (to IdN : MsgR) Cs } |= existeToMsgParaNodo(IdN) = true .
+  eq S |= nodosTotales(X) = numNodos(S) == X .
+  eq S |= nodosExternos(X) = sd(numNodos(S),1) == X .
 endm
 
 mod TEST is
- *** Importa los modulos correspondientes
+  *** Importa los modulos correspondientes
+  pr PROPS .
+  pr LTL-SIMPLIFIER .
+  pr MODEL-CHECKER .
+  pr EJEMPLO .
+
 endm
 
-eof
-
 *** Define y comprueba las propiedades
+*** <17> Comprobación de propiedades
+--- La cantidad de nodos no varía
+red modelCheck(init, [] nodosTotales(4)) .
+red modelCheck(init, [] nodosExternos(3)) .
 
-red modelCheck(init, ...) .
+--- Si un nodo existe y otro lo tiene como amigo, le acaba mandando un mensaje.
+red modelCheck(init, [] (existeNodo("2") /\ sonAmigos("2", "3") -> <> existeToMsgParaNodo("3"))) .
+red modelCheck(init, [] (existeNodo("2") /\ sonAmigos("2", "4") -> <> existeToMsgParaNodo("4"))) .
+red modelCheck(init, [] (existeNodo("3") /\ sonAmigos("3", "2") -> <> existeToMsgParaNodo("2"))) .
+red modelCheck(init, [] (existeNodo("3") /\ sonAmigos("3", "4") -> <> existeToMsgParaNodo("4"))) .
+red modelCheck(init, [] (existeNodo("4") /\ sonAmigos("4", "2") -> <> existeToMsgParaNodo("2"))) .
+red modelCheck(init, [] (existeNodo("4") /\ sonAmigos("4", "3") -> <> existeToMsgParaNodo("3"))) .
+
+--- Cualquier mensaje acaba desapareciendo.
+red modelCheck(init, <> [] ~ existeToMsgParaNodo("2")) .
+red modelCheck(init, <> [] ~ existeToMsgParaNodo("3")) .
+red modelCheck(init, <> [] ~ existeToMsgParaNodo("4")) .
