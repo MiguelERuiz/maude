@@ -1,0 +1,95 @@
+mod NOCHEVIEJA is
+  pr PERSONA .
+
+  sort Sistema Lugar.
+  subsort Lugar < Sistema .
+
+  *** Definicion de los lugares del sistema
+  op {_|_} : String Gente -> Lugar [ctor] .
+  op {_|_|_|_} : String Gente Gente Nat -> Lugar [ctor] .
+
+  *** Definicion del Sistema
+  op vacio : -> Sistema [ctor] .
+  op __ : Sistema Sistema -> Sistema [ctor assoc comm id: vacio] .
+
+  *** Declaracion de variables
+  vars L L' : Lugar .
+  vars G G' G'' : Gente .
+  vars N N' : String .
+  vars A A' : Nat .
+  vars NC NC' NR NR' : Nat .
+  vars D D' : Nat .
+  var NE : Nat .
+  var P : Nat .
+  vars TE TE' : Bool .
+  vars E E' : Estado .
+
+  *** Definición de ecuaciones
+  --- Ordena a la gente en función del dinero que llevan encima
+  op ordena : Gente -> Gente .
+  ceq ordena(G p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G') = ordena(G p(N, A, E, NC, NR, D) p(N', A', E', NC', NR', D') G')
+    if D > D' .
+  eq ordena(G) = G [owise] .
+
+
+  *** Comportamiento del sistema
+
+  --- Todas las personas de nuestro sistema están inicialmente en una
+  --- 'zona residencial' en estado relajado y deciden qué hacer entre sus
+  --- opciones:
+
+  --- Ir a la Plaza Mayor: En la plaza tenemos a Billy el relaciones,
+  --- que se dedica a vender entradas para la fiesta de moda. Si alguien
+  --- está junto a Billy y tiene dinero suficiente le puede comprar una entrada.
+  --- Cuando esto ocurre, el precio de la siguiente entrada que Billy venda se
+  --- incrementa en 5 euros por la ley de la oferta y la demanda. Nótese que no
+  --- hay descanso para Billy, estará durante todo el tiempo en la plaza
+  --- intentando vender sus entradas e incluso permanecerá allí una vez todas
+  --- las entradas se hayan vendido, disfrutando del fresco de la noche.
+  rl [ir-a-plaza-mayor] : { "Zona residencial" | p(N, A, relajado, NC, NR, D, false) G }
+                          { "Plaza Mayor" | G' } =>
+                          { "Zona residencial" | G }
+                          { "Plaza Mayor" | p(N, A, relajado, NC, NR, D, false) G' } .
+
+  crl [comprar-entrada] : { "Plaza Mayor" | p(N, A, E, NC, NR, D, false)
+                                          billy("Billy el relaciones", trabajando, NE, P) G' } =>
+                          { "Plaza Mayor" | p(N, A, E, NC, NR, D-P, true)
+                                          billy("Billy el relaciones", trabajando, NE-1, P+5) G' }
+    if D >= P /\ NE > 0 .
+
+  --- rl [hacer-cola-local-de-moda] { "Zona residencial" | p(N, A, E, NC, NR, D, TE) G }
+  ---                                 { "Local de Moda" | G | G'' } =>
+  ---                                 { "Zona residencial" | G }
+  ---                                 { "Local de Moda" | ins-ord(p(N, A, E, NC, NR, D, TE), G) | G'' } .
+
+  --- TODO crear regla para entrar al local de moda
+
+  --- TODO crear regla para volver a la plaza mayor si te echan del local de moda
+
+  --- TODO crear reglas para consumir refrescos y copas (separadas)
+
+  --- TODO crear regla cuando Bokencio echa a alguien del local
+
+  --- TODO crear regla de volver a casa "cansado pero contento"
+
+  --- TODO crear regla Bokencio consume refrescos
+
+  rl [ir-a-recreativos] : { "Zona residencial" | p(N, A, relajado, NC, NR, D, false) G }
+                          { "Recreativos" | G' } =>
+                          { "Zona residencial" | p(N, A, relajado, NC, NR, D, false) G }
+                          { "Recreativos" | p(N, A, relajado, NC, NR, D, false) G' } .
+
+  --- TODO Crear regla para jugar a los recreativos
+
+  --- Tener en cuenta que las personas que vuelven a casa y estan en un estado distinto a relajado no pueden volver a salir
+
+endm
+
+mod EJEMPLO is
+  pr NOCHEVIEJA .
+
+  op init : -> Sistema .
+  eq init = { "Zona residencial" | p("Nacho", 28, relajado, 0, 0, 50, false) p("Pepe", 18, relajado, 0, 0, 7, false) p("JM", 22, relajado, 0, 0, 15, false) p("Alex", 21, relajado, 0, 0, 19, false) p("Andrea", 23, relajado, 0, 0, 18, false)}
+            { "Plaza Mayor" | billy("Billy el relaciones", trabajando, 5, 10) }
+            { "Local de moda" | nadie | bokencio("Bokencio el puerta", trabajando, 100) | 4 }
+            { "Recreativos" | nadie }

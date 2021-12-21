@@ -1,0 +1,74 @@
+fmod PERSONA is
+  pr STRING .
+  --- pr INT .
+
+  sorts Lugar Persona Gente OGente Estado .
+  subsort Persona < OGente < Gente .
+
+  *** Declaracion de los tipos de estado en los que se puede
+  *** encontrar una persona
+  ops relajado trabajando ebrio cansado-pero-contento humillado satisfecho : -> Estado [ctor] .
+
+  *** Declaracion del tipo Persona (generica)
+  --- p(Nombre::Str, Edad::Nat, E::Estado, NumCopas::Nat, NumRefrescos::Nat, Dinero::Nat, TieneEntrada?::Bool)
+  op p : String Nat Estado Nat Nat Nat Bool -> Persona [ctor] .
+
+  *** Billy el relaciones
+  --- billy(Nombre::Str, E::Estado, NumEntradas::Nat, PrecioEntrada::Nat)
+  op billy : String Estado Nat Nat -> Persona [ctor] .
+
+  *** Bokencio el puerta
+  --- bokencio(Nombre::Str, E::Estado, Dinero::Nat)
+  op bokencio : String Estado Nat -> Persona [ctor] .
+
+  *** Declaracion del tipo Gente
+  op nadie : -> OGente [ctor] .
+  op __ : Gente Gente -> Gente [ctor assoc id: nadie] .
+
+  *** Declaracion de variables
+  vars P P' : Persona .
+  vars G G' G'' : Gente .
+  var OG : OGente .
+  vars N N' : String .
+  vars A A' : Nat .
+  vars NC NC' NR NR' : Nat .
+  vars D D' : Nat .
+  var NE : Nat .
+  vars TE TE' : Bool .
+  vars E E' : Estado .
+
+  *** Definición de pertenencia a la lista de gente ordenada por su dinero
+  cmb p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G : OGente
+    if D > D' /\ p(N', A', E', NC', NR', D', TE') G : OGente .
+
+  *** Definicion de ecuaciones
+  --- TODO fijarse en el ejemplo de ordenacion de personas del manual de Maude de A. Riesco
+  op ordena : Gente -> OGente .
+  ceq ordena(G p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G') = ordena(G p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G')
+    if D > D' .
+  eq ordena(G) = G [owise] .
+
+  op insOrd : OGente Persona -> OGente .
+  eq insOrd(nadie, P) = P .
+  eq insOrd(p(N, A, E, NC, NR, D, TE) G, p(N', A', E', NC', NR', D', TE')) =
+                      if D > D'
+                      then
+                        p(N, A, E, NC, NR, D, TE) insOrd(G, p(N', A', E', NC', NR', D', TE'))
+                      else
+                        p(N', A', E', NC', NR', D', TE') p(N, A, E, NC, NR, D, TE) G
+                      fi .
+
+  --- Personas de ejemplo
+  op nacho : -> Persona .
+  eq nacho = p("Nacho", 28, relajado, 0, 0, 50, false) .
+  op pp : -> Persona .
+  eq pp = p("Pepe", 18, relajado, 0, 0, 7, false) .
+  op jm : -> Persona .
+  eq jm = p("JM", 22, relajado, 0, 0, 15, false) .
+  op alex : -> Persona .
+  eq alex = p("Alex", 21, relajado, 0, 0, 19, false) .
+  op andrea : -> Persona .
+  eq andrea = p("Andrea", 23, relajado, 0, 0, 18, false) .
+endfm
+
+red ordena(pp nacho jm alex andrea) .
