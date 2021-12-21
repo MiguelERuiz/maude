@@ -1,0 +1,50 @@
+fmod GENTE is
+  pr PERSONA .
+
+  sorts Gente OGente .
+  subsort Persona < OGente < Gente .
+
+  *** Declaracion del tipo Gente
+  op nadie : -> OGente [ctor] .
+  op __ : Gente Gente -> Gente [ctor assoc id: nadie] .
+
+  *** Definición de variables
+  vars P P' : Persona .
+  vars G G' : Gente .
+  var OG : OGente .
+
+  *** Definición de pertenencia a la lista de gente ordenada por su dinero
+  cmb P P' G : OGente
+    if P > P' /\ P' G : OGente .
+
+  *** Definicion de ecuaciones
+  --- TODO fijarse en el ejemplo de ordenacion de personas del manual de Maude de A. Riesco
+  op ordena : Gente -> Gente .
+  ceq ordena(G P' P G') = ordena(G P P' G')
+    if P > P' .
+  eq ordena(G) = G [owise] .
+
+  op insOrd : OGente Persona -> OGente .
+  eq insOrd(nadie, P) = P .
+  eq insOrd(P G, P') =
+                      if P > P'
+                      then
+                        P insOrd(G, P')
+                      else
+                        P' P G
+                      fi .
+
+  --- Personas de ejemplo aka mis amig@s :D
+  ops js nacho fer eti ire pp alex andrea : -> Persona .
+  eq js = p("Jotas", 22, relajado, 0, 0, 150, false) .
+  eq nacho = p("Nacho", 28, relajado, 0, 0, 140, false) .
+  eq fer = p("Fer", 35, relajado, 0, 0, 50, false) .
+  eq eti = p("Eti", 34, relajado, 0, 0, 160, false) .
+  eq ire = p("Ire", 27, relajado, 0, 0, 130, false) .
+  eq pp = p("Pepe", 17, relajado, 0, 0, 70, false) .
+  eq alex = p("Alex", 21, relajado, 0, 0, 180, false) .
+  eq andrea = p("Andrea", 23, relajado, 0, 0, 180, false) .
+
+endfm
+
+red ordena(pp nacho js andrea alex) .

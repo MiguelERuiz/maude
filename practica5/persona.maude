@@ -1,9 +1,7 @@
 fmod PERSONA is
   pr STRING .
-  --- pr INT .
 
-  sorts Lugar Persona Gente OGente Estado .
-  subsort Persona < OGente < Gente .
+  sorts Persona Estado .
 
   *** Declaracion de los tipos de estado en los que se puede
   *** encontrar una persona
@@ -21,14 +19,7 @@ fmod PERSONA is
   --- bokencio(Nombre::Str, E::Estado, Dinero::Nat)
   op bokencio : String Estado Nat -> Persona [ctor] .
 
-  *** Declaracion del tipo Gente
-  op nadie : -> OGente [ctor] .
-  op __ : Gente Gente -> Gente [ctor assoc id: nadie] .
-
   *** Declaracion de variables
-  vars P P' : Persona .
-  vars G G' G'' : Gente .
-  var OG : OGente .
   vars N N' : String .
   vars A A' : Nat .
   vars NC NC' NR NR' : Nat .
@@ -37,38 +28,24 @@ fmod PERSONA is
   vars TE TE' : Bool .
   vars E E' : Estado .
 
-  *** Definición de pertenencia a la lista de gente ordenada por su dinero
-  cmb p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G : OGente
-    if D > D' /\ p(N', A', E', NC', NR', D', TE') G : OGente .
+  *** Definición del concepto de ordenación de persona tomando
+  *** como criterio el dinero que lleva encima
+  ops _<=_ _>_ : Persona Persona -> Bool .
+  eq p(N, A, E, NC, NR, D, TE) <= p(N', A', E', NC', NR', D', TE') = D <= D' .
+  eq p(N, A, E, NC, NR, D, TE) > p(N', A', E', NC', NR', D', TE') = D > D' .
 
-  *** Definicion de ecuaciones
-  --- TODO fijarse en el ejemplo de ordenacion de personas del manual de Maude de A. Riesco
-  op ordena : Gente -> OGente .
-  ceq ordena(G p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G') = ordena(G p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G')
-    if D > D' .
-  eq ordena(G) = G [owise] .
-
-  op insOrd : OGente Persona -> OGente .
-  eq insOrd(nadie, P) = P .
-  eq insOrd(p(N, A, E, NC, NR, D, TE) G, p(N', A', E', NC', NR', D', TE')) =
-                      if D > D'
-                      then
-                        p(N, A, E, NC, NR, D, TE) insOrd(G, p(N', A', E', NC', NR', D', TE'))
-                      else
-                        p(N', A', E', NC', NR', D', TE') p(N, A, E, NC, NR, D, TE) G
-                      fi .
-
-  --- Personas de ejemplo
-  op nacho : -> Persona .
-  eq nacho = p("Nacho", 28, relajado, 0, 0, 50, false) .
-  op pp : -> Persona .
+  --- Personas de ejemplo aka mis amig@s :D
+  ops js nacho fer eti ire pp alex andrea : -> Persona .
+  eq js = p("Jotas", 22, relajado, 0, 0, 15, false) .
+  eq nacho = p("Nacho", 28, relajado, 0, 0, 14, false) .
+  eq fer = p("Fer", 35, relajado, 0, 0, 5, false) .
+  eq eti = p("Eti", 34, relajado, 0, 0, 16, false) .
+  eq ire = p("Ire", 27, relajado, 0, 0, 13, false) .
   eq pp = p("Pepe", 18, relajado, 0, 0, 7, false) .
-  op jm : -> Persona .
-  eq jm = p("JM", 22, relajado, 0, 0, 15, false) .
-  op alex : -> Persona .
   eq alex = p("Alex", 21, relajado, 0, 0, 19, false) .
-  op andrea : -> Persona .
   eq andrea = p("Andrea", 23, relajado, 0, 0, 18, false) .
+
 endfm
 
-red ordena(pp nacho jm alex andrea) .
+red nacho > pp == true .
+red alex <= andrea == false .
