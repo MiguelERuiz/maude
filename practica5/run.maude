@@ -1,2 +1,3 @@
 load persona.maude
 load gente.maude
+load p5_individual.maude
