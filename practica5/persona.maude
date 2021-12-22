@@ -20,6 +20,7 @@ fmod PERSONA is
   op bokencio : String Estado Nat -> Persona [ctor] .
 
   *** Declaracion de variables
+  var P : Persona .
   vars N N' : String .
   vars A A' : Nat .
   vars NC NC' NR NR' : Nat .
@@ -28,6 +29,24 @@ fmod PERSONA is
   vars TE TE' : Bool .
   vars E E' : Estado .
 
+  *** Verifica que una persona no es ni Billy ni Bokencio
+  op es-persona-generica : Persona -> Bool .
+  eq es-persona-generica(p(N, A, E, NC, NR, D, TE)) = true .
+  eq es-persona-generica(P) = false [owise] .
+
+  *** Devuelve la edad de una persona
+  op edad : Persona ~> Nat .
+  eq edad(p(N, A, E, NC, NR, D, TE)) = A .
+
+  *** Verifica que si una persona es mayor de edad
+  op es-mayor-de-edad : Persona -> Bool .
+  eq es-mayor-de-edad(P) = edad(P) >= 18 .
+
+  *** Verifica que una persona tiene entrada
+  op tiene-entrada : Persona -> Bool .
+  eq tiene-entrada(p(N, A, E, NC, NR, D, TE)) = TE .
+  eq tiene-entrada(P) = false [owise] .
+
   *** Definición del concepto de ordenación de persona tomando
   *** como criterio el dinero que lleva encima
   ops _<=_ _>_ : Persona Persona -> Bool .
@@ -35,17 +54,26 @@ fmod PERSONA is
   eq p(N, A, E, NC, NR, D, TE) > p(N', A', E', NC', NR', D', TE') = D > D' .
 
   --- Personas de ejemplo aka mis amig@s :D
+  ops js nacho fer eti ire pp alex andrea billy bokencio : -> Persona .
   ops js nacho fer eti ire pp alex andrea : -> Persona .
-  eq js = p("Jotas", 22, relajado, 0, 0, 15, false) .
-  eq nacho = p("Nacho", 28, relajado, 0, 0, 14, false) .
-  eq fer = p("Fer", 35, relajado, 0, 0, 5, false) .
-  eq eti = p("Eti", 34, relajado, 0, 0, 16, false) .
-  eq ire = p("Ire", 27, relajado, 0, 0, 13, false) .
-  eq pp = p("Pepe", 18, relajado, 0, 0, 7, false) .
-  eq alex = p("Alex", 21, relajado, 0, 0, 19, false) .
-  eq andrea = p("Andrea", 23, relajado, 0, 0, 18, false) .
+  eq js = p("Jotas", 22, relajado, 0, 0, 150, false) .
+  eq nacho = p("Nacho", 28, relajado, 0, 0, 140, false) .
+  eq fer = p("Fer", 35, relajado, 0, 0, 50, false) .
+  eq eti = p("Eti", 34, relajado, 0, 0, 160, true) .
+  eq ire = p("Ire", 27, relajado, 0, 0, 130, false) .
+  eq pp = p("Pepe", 17, relajado, 0, 0, 70, false) .
+  eq alex = p("Alex", 21, relajado, 0, 0, 180, false) .
+  eq andrea = p("Andrea", 23, relajado, 0, 0, 180, false) .
+  eq bokencio = bokencio("Bokencio el puerta", trabajando, 100) .
 
 endfm
 
+red es-persona-generica(nacho) .
+red not es-persona-generica(billy) .
+red not es-persona-generica(bokencio) .
+red edad(ire) == 27 .
+red es-mayor-de-edad(pp) == false .
+red tiene-entrada(eti) .
+red not tiene-entrada(billy) .
 red nacho > pp == true .
 red alex <= andrea == false .
