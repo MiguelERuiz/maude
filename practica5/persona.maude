@@ -72,8 +72,8 @@ red es-persona-generica(nacho) .
 red not es-persona-generica(billy) .
 red not es-persona-generica(bokencio) .
 red edad(ire) == 27 .
-red es-mayor-de-edad(pp) == false .
+red not es-mayor-de-edad(pp) .
 red tiene-entrada(eti) .
 red not tiene-entrada(billy) .
-red nacho > pp == true .
-red alex <= andrea == false .
+red nacho > pp .
+red not alex <= andrea .

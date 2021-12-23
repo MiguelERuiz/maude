@@ -18,7 +18,12 @@ fmod GENTE is
     if P > P' /\ P' G : OGente .
 
   *** Definicion de ecuaciones
-  --- TODO fijarse en el ejemplo de ordenacion de personas del manual de Maude de A. Riesco
+
+  --- Cantidad de gente
+  op numPersonas : Gente -> Nat .
+  eq numPersonas(nadie) = 0 .
+  eq numPersonas(P G) = 1 + numPersonas(G) .
+
   op ordena : Gente -> Gente .
   ceq ordena(G P' P G') = ordena(G P P' G')
     if P > P' .
@@ -48,3 +53,5 @@ fmod GENTE is
 endfm
 
 red ordena(pp nacho js andrea alex) .
+
+red numPersonas(pp nacho js andrea alex) == 5 .
