@@ -1,9 +1,9 @@
 fmod PERSONA is
   pr STRING .
 
-  sorts Persona Estado Gente .
+  sorts Persona Estado Gente OGente .
 
-  subsort Persona < Gente .
+  subsort Persona < Gente OGente .
 
   *** Declaracion de los tipos de estado en los que se puede
   *** encontrar una persona
@@ -21,13 +21,16 @@ fmod PERSONA is
   --- bokencio(Nombre::Str, E::Estado, Dinero::Nat)
   op bokencio : String Estado Nat -> Persona [ctor] .
 
-  *** Declaracion del tipo Gente
+  *** Declaracion de los tipos Gente y OGente
   op nadie : -> Gente [ctor] .
-  op __ : Gente Gente ~> Gente [ctor assoc id: nadie] .
+  op cv : -> OGente [ctor] . --- Cola vacia
+  op __ : Gente Gente -> Gente [ctor assoc comm id: nadie] .
+  op _;_ : OGente OGente -> OGente [ctor assoc id: cv ] .
 
   *** Declaracion de variables
-  var P : Persona .
+  vars P P' : Persona .
   var G : Gente .
+  var OG : OGente .
   vars N N' : String .
   vars A A' : Nat .
   vars NC NC' NR NR' : Nat .
@@ -65,6 +68,23 @@ fmod PERSONA is
   eq p(N, A, E, NC, NR, D, TE) <= p(N', A', E', NC', NR', D', TE') = D <= D' .
   eq p(N, A, E, NC, NR, D, TE) > p(N', A', E', NC', NR', D', TE') = D > D' .
 
+  *** Definición de pertenencia a la lista de gente ordenada por su dinero
+  mb cv : OGente .
+  cmb P ; P' OG : OGente
+    if P > P' /\ P' ; OG : OGente .
+
+  *** Definicion de ecuaciones
+
+  op insOrd : OGente Persona -> OGente .
+  eq insOrd(cv, P) = P .
+  eq insOrd(P ; OG, P') =
+                      if P > P'
+                      then
+                        P ; insOrd(OG, P')
+                      else
+                        P' ; P ; OG
+                      fi .
+
   --- Personas de ejemplo aka mis amig@s :D
   ops js nacho fer eti ire pp alex andrea billy bokencio : -> Persona .
   ops js nacho fer eti ire pp alex andrea : -> Persona .
@@ -75,7 +95,7 @@ fmod PERSONA is
   eq ire = p("Ire", 27, relajado, 0, 0, 130, false) .
   eq pp = p("Pepe", 17, relajado, 0, 0, 70, false) .
   eq alex = p("Alex", 21, relajado, 0, 0, 180, false) .
-  eq andrea = p("Andrea", 23, relajado, 0, 0, 180, false) .
+  eq andrea = p("Andrea", 23, relajado, 0, 0, 190, false) .
   eq bokencio = bokencio("Bokencio el puerta", trabajando, 100) .
 
 endfm
@@ -89,4 +109,5 @@ red tiene-entrada(eti) .
 red not tiene-entrada(billy) .
 red nacho > pp .
 red alex <= andrea .
---- red numPersonas(pp nacho js andrea alex) == 5 .
+red numPersonas(pp nacho js andrea alex) == 5 .
+red insOrd(insOrd(insOrd(andrea, ire), pp), alex) .
