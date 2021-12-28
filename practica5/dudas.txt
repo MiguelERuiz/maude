@@ -1,6 +1,6 @@
 - Cuanto dinero se descuenta por refresco/copa?? Queda a mi criterio?? si
 - La partida a dobles de los recreativos, como determinar de manera aleatoria
-  quien gana y quien pierde??
+  quien gana y quien pierde?? se resuelve si existe commutatividad en el tipo Gente
 - Los refrescos que se bebe Bokencio, son una regla particular? si
 - Cuando entras al local de moda, "canjeas" la entrada?? no, una vez tienes entrada, tienes entrada **para siempre** (pregunta hecha por Pepe)
 - Puedo definir dos veces la misma propiedad?? d) e) f) Si, fijarse en las propiedades de la practica 4
