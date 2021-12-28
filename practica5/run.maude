@@ -1,3 +1,2 @@
 load persona.maude
-load ogente.maude
 load p5_individual.maude

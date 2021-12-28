@@ -1,13 +1,14 @@
 mod NOCHEVIEJA is
   pr STRING .
   pr PERSONA .
-  pr GENTE .
 
   sorts Sistema Lugar .
   subsort Lugar < Sistema .
 
   *** Definicion de los lugares del sistema
+  --- { Nombre:String | G:Gente }
   op {_|_} : String Gente -> Lugar [ctor] .
+  --- { Nombre:String | OG:OGente | G:Gente | AM:Nat }
   op {_|_|_|_} : String OGente Gente Nat -> Lugar [ctor] .
 
   *** Definicion del Sistema
@@ -44,10 +45,10 @@ mod NOCHEVIEJA is
   --- hay descanso para Billy, estará durante todo el tiempo en la plaza
   --- intentando vender sus entradas e incluso permanecerá allí una vez todas
   --- las entradas se hayan vendido, disfrutando del fresco de la noche.
-  rl [ir-a-plaza-mayor] : { "Zona Residencial" | p(N, A, relajado, NC, NR, D, false) G }
+  rl [ir-a-plaza-mayor] : { "Zona Residencial" | p(N, A, relajado, NC, NR, D, TE) G }
                           { "Plaza Mayor" | G' } =>
                           { "Zona Residencial" | G }
-                          { "Plaza Mayor" | p(N, A, relajado, NC, NR, D, false) G' } .
+                          { "Plaza Mayor" | p(N, A, relajado, NC, NR, D, TE) G' } .
 
   crl [comprar-entrada] : { "Plaza Mayor" | p(N, A, E, NC, NR, D, false)
                                           billy("Billy el relaciones", trabajando, NE, PE) G' } =>
@@ -55,56 +56,54 @@ mod NOCHEVIEJA is
                                           billy("Billy el relaciones", trabajando, sd(NE, 1), PE + 5) G' }
     if D >= PE /\ NE > 0 .
 
-  rl [hacer-cola-local-de-moda] : { "Zona Residencial" | p(N, A, E, NC, NR, D, TE) G }
-                                  { "Local de Moda" | G | G'' | AM } =>
+  rl [hacer-cola-local-de-moda] : { "Zona Residencial" | P G }
+                                  { "Local de Moda" | OG | G' | AM } =>
                                   { "Zona Residencial" | G }
-                                  { "Local de Moda" | ordena(p(N, A, E, NC, NR, D, TE) G) | G'' | AM } .
+                                  { "Local de Moda" | insOrd(OG, P) | G' | AM } .
 
   crl [hacer-cola-local-de-moda-2] : { "Plaza Mayor" | P G }
-                                     { "Local de Moda" | G | G'' | AM } =>
+                                     { "Local de Moda" | OG | G' | AM } =>
                                      { "Plaza Mayor" | G }
-                                     { "Local de Moda" | ordena(P G) | G'' | AM }
+                                     { "Local de Moda" | insOrd(OG, P) | G' | AM }
     if es-persona-generica(P) .
 
-  crl [entrar-local-de-moda] : {"Local de Moda" | p(N, A, E, NC, NR, D, TE) G | G' | AM } =>
-                               {"Local de Moda" | G | p(N, A, E, NC, NR, D, false) G' | sd(AM, 1) }
-    if TE /\ es-mayor-de-edad(p(N, A, E, NC, NR, D, TE)) /\ AM > 0 .
+  crl [entrar-local-de-moda] : {"Local de Moda" | P ; OG | G | AM } =>
+                               {"Local de Moda" | OG | P G | sd(AM, 1) }
+    if tiene-entrada(P) /\ es-mayor-de-edad(P) /\ AM > 0 .
 
-  rl [volver-a-plaza-mayor] : {"Local de Moda" | P G | G' | AM }
-                              {"Plaza Mayor" | G'' } =>
-                              {"Local de Moda" | G | G' | AM }
-                              {"Plaza Mayor" | P G'' } .
+  rl [volver-a-plaza-mayor] : {"Local de Moda" | P ; OG | G' | AM }
+                              {"Plaza Mayor" | G' } =>
+                              {"Local de Moda" | OG | G' | AM }
+                              {"Plaza Mayor" | P G' } .
 
-  crl [beber-copa] : { "Local de Moda" | G | p(N, A, E, NC, NR, D, TE) G' | AM } =>
-                     { "Local de Moda" | G | p(N, A, E, NC + 1, NR, sd(D,10), TE) G' | AM }
+  crl [beber-copa] : { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G | AM } =>
+                     { "Local de Moda" | OG | p(N, A, E, NC + 1, NR, sd(D,10), TE) G | AM }
     if D >= 10 .
 
-  crl [beber-refresco] : { "Local de Moda" | G | p(N, A, E, NC, NR, D, TE) G' | AM } =>
-                         { "Local de Moda" | G | p(N, A, E, NC, NR + 1, sd(D,7), TE) G' | AM }
-    if D >= 7 .
+  crl [beber-refresco] : { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G | AM } =>
+                         { "Local de Moda" | OG | p(N, A, E, NC, NR + 1, sd(D,5), TE) G | AM }
+    if D >= 5 .
 
-  crl [estado-embriaguez] : { "Local de Moda" | G | p(N, A, E, NC, NR, D, TE) G' | AM } =>
-                            { "Local de Moda" | G | p(N, A, ebrio, NC, NR, D, TE) G' | AM }
-    if NC >= 4 .
+  crl [estado-embriaguez] : { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G | AM } =>
+                            { "Local de Moda" | OG | p(N, A, ebrio, NC, NR, D, TE) G | AM }
+    if NC == 4 /\ E =/= ebrio .
 
-  crl [bokencio-bebe-refresco] : { "Local de Moda" | G | bokencio("Bokencio el puerta", trabajando, D) G' | AM } =>
-                                 { "Local de Moda" | G | bokencio("Bokencio el puerta", trabajando, sd(D, 2)) G' | AM }
-    if D >= 2 .
+  crl [bokencio-bebe-refresco] : { "Local de Moda" | OG | bokencio("Bokencio el puerta", trabajando, D) G | AM } =>
+                                 { "Local de Moda" | OG | bokencio("Bokencio el puerta", trabajando, sd(D, 5)) G | AM }
+    if D >= 5 .
 
-  --- TODO crear regla para volver a la plaza mayor si te echan del local de moda
-
-  rl [cruzarse-ebrio-con-bokencio] : { "Local de Moda" | G |
+  rl [cruzarse-ebrio-con-bokencio] : { "Local de Moda" | OG |
                                         p(N, A, ebrio, NC, NR, D, TE)
-                                        bokencio("Bokencio el puerta", trabajando, D) G' | AM }
-                                     { "Zona Residencial" | G } =>
-                                     { "Local de Moda" | G |
-                                       bokencio("Bokencio el puerta", trabajando, D) G' | AM + 1 }
-                                     { "Zona Residencial" | p(N, A, ebrio, NC, NR, D, TE) G } .
+                                        bokencio("Bokencio el puerta", trabajando, D) G | AM }
+                                     { "Zona Residencial" | G' } =>
+                                     { "Local de Moda" | OG |
+                                        bokencio("Bokencio el puerta", trabajando, D) G | AM + 1 }
+                                     { "Zona Residencial" | p(N, A, ebrio, NC, NR, D, TE) G' } .
 
-  crl [volver-a-casa-cansado-pero-contento] : { "Local de Moda" | G | p(N, A, E, NC, NR, D, TE) G' | AM }
-                                              { "Zona Residencial" | G'' } =>
-                                              { "Local de Moda" | G | G' | AM + 1 }
-                                              { "Zona Residencial" | p(N, A, cansado-pero-contento, NC, NR, D, TE) G'' }
+  crl [volver-a-casa-cansado-pero-contento] : { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G | AM }
+                                              { "Zona Residencial" | G' } =>
+                                              { "Local de Moda" | OG | G | AM + 1 }
+                                              { "Zona Residencial" | p(N, A, cansado-pero-contento, NC, NR, D, TE) G' }
     if E =/= ebrio .
 
   rl [ir-a-recreativos] : { "Zona Residencial" | p(N, A, relajado, NC, NR, D, TE) G }
@@ -112,41 +111,59 @@ mod NOCHEVIEJA is
                           { "Zona Residencial" | G }
                           { "Recreativos" | p(N, A, relajado, NC, NR, D, TE) G' } .
 
-  rl [ir-a-recreativos-desde-pza-mayor] : { "Plaza Mayor" | P G }
+  crl [ir-a-recreativos-desde-pza-mayor] : { "Plaza Mayor" | P G }
                                           { "Recreativos" | G' } =>
                                           { "Plaza Mayor" | G }
-                                          { "Recreativos" | P G' } .
+                                          { "Recreativos" | P G' }
+    if es-persona-generica(P) .
 
-  --- TODO Crear regla para jugar a los recreativos
   rl [jugar-a-dobles] : { "Recreativos" | p(N, A, E, NC, NR, D, TE) p(N', A', E', NC', NR', D', TE') G }
-                         { "Zona Residencial" | G' } =>
-                         { "Recreativos" | G  }
-                         { "Zona Residencial" | p(N, A, humillado, NC, NR, D, TE) p(N', A', satisfecho, NC', NR', D', TE') G' } .
-
-  --- Tener en cuenta que las personas que vuelven a casa y estan en un estado distinto a relajado no pueden volver a salir
+                        { "Zona Residencial" | G' } =>
+                        { "Recreativos" | G  }
+                        { "Zona Residencial" | p(N, A, humillado, NC, NR, D, TE) p(N', A', satisfecho, NC', NR', D', TE') G' } .
 
 endm
 
 mod EJEMPLO is
   pr NOCHEVIEJA .
   pr PERSONA .
-  pr GENTE .
 
   op init : -> Sistema .
-  eq init = { "Zona Residencial" | p("Nacho", 28, relajado, 0, 0, 50, false) p("Pepe", 18, relajado, 0, 0, 7, false) p("JM", 22, relajado, 0, 0, 15, false) p("Alex", 21, relajado, 0, 0, 19, false) p("Andrea", 23, relajado, 0, 0, 18, false)}
-            { "Plaza Mayor" | billy("Billy el relaciones", trabajando, 5, 10) }
-            { "Local de Moda" | nadie | bokencio("Bokencio el puerta", trabajando, 100) | 4 }
+  eq init = { "Zona Residencial" | p("Pepe", 23, relajado, 0, 0, 50, false)
+                                   p("Nacho", 28, relajado, 0, 0, 20, false) }
+                                  ---  p("Andrea", 23, relajado, 0, 0, 18, false) }
+                                  ---  p("JM", 22, relajado, 0, 0, 15, false)
+                                  ---  p("Alex", 21, relajado, 0, 0, 19, false)
+            { "Plaza Mayor" | billy("Billy el relaciones", trabajando, 2, 5) }
+            { "Local de Moda" | cv | bokencio("Bokencio el puerta", trabajando, 5) | 4 }
             { "Recreativos" | nadie } .
 endm
 
-rew init .
+--- rew [6] init .
+
+search init =>+ { "Zona Residencial" | p("Pepe", 23, ebrio, 4, 1, 0, true)
+                                       p("Nacho", 28, cansado-pero-contento, 0, 2, 0, true) }
+                                        --- p("Andrea", 23, cansado-pero-contento, 0, 0, 3, true) }
+                                        --- p("JM", 22, humillado, 0, 0, 15, false)
+                                        --- p("Alex", 21, satisfecho, 0, 0, 19, false)
+                { "Plaza Mayor" | billy("Billy el relaciones", trabajando, 0, 15) }
+                { "Local de Moda" | cv | bokencio("Bokencio el puerta", trabajando, 0) | 4 }
+                { "Recreativos" | nadie } .
+
+search init =>+ { "Zona Residencial" | p("Pepe", 23, humillado, 0, 0, 50, false)
+                                       p("Nacho", 28, satisfecho, 0, 0, 20, false) }
+                { "Plaza Mayor" | billy("Billy el relaciones", trabajando, 2, 5) }
+                { "Local de Moda" | cv | bokencio("Bokencio el puerta", trabajando, 0) | 4 }
+                { "Recreativos" | nadie } .
+
+--- show search graph .
+
 
 load model-checker
 
 mod PROPS is
   pr SATISFACTION .
   pr PERSONA .
-  pr GENTE .
   pr NOCHEVIEJA .
 
   subsort Sistema < State .
@@ -176,11 +193,13 @@ mod PROPS is
   op hayPersonaConEntrada : String -> Prop [ctor] .
 
   *** Definición de propiedades mediante ecuaciones
-  eq S { "Local de Moda" | G | G' | AM } |= hayGenteEnElLocal(G') = numPersonas(G') > 0 .
-  eq S { "Local de Moda" | G | p(N, A, E, NC, NR, TE) G' | AM } |= hayPersonaEnElLocal(N) = true .
-  eq S { "Recreativos" | p(N, A, E, NC, NR, TE) G } |= hayPersonaEnLosRecreativos(N) = true .
+  eq S { "Local de Moda" | OG | G' | AM } |= hayGenteEnElLocal(G') = numPersonas(G') > 0 .
+  eq S { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G' | AM } |= hayPersonaEnElLocal(N) = true .
+  eq S { "Recreativos" | p(N, A, E, NC, NR, D, TE) G } |= hayPersonaEnLosRecreativos(N) = true .
   --- TODO definir estas propiedades
   --- Hay alguien ebrio (en cualquier lugar).
   --- Hay alguien concreto ebrio (en cualquier lugar).
+  eq S { NL | P G } |= hayPersonaEbria(P) = esta-ebrio(P) .
+  eq S { "Local de Moda" | OG | P G | AM } |= hayPersonaEbria(P) = esta-ebrio(P) .
   --- Hay alguien concreto con entrada.
 endm
