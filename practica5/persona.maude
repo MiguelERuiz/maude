@@ -1,7 +1,9 @@
 fmod PERSONA is
   pr STRING .
 
-  sorts Persona Estado .
+  sorts Persona Estado Gente .
+
+  subsort Persona < Gente .
 
   *** Declaracion de los tipos de estado en los que se puede
   *** encontrar una persona
@@ -19,8 +21,13 @@ fmod PERSONA is
   --- bokencio(Nombre::Str, E::Estado, Dinero::Nat)
   op bokencio : String Estado Nat -> Persona [ctor] .
 
+  *** Declaracion del tipo Gente
+  op nadie : -> Gente [ctor] .
+  op __ : Gente Gente ~> Gente [ctor assoc id: nadie] .
+
   *** Declaracion de variables
   var P : Persona .
+  var G : Gente .
   vars N N' : String .
   vars A A' : Nat .
   vars NC NC' NR NR' : Nat .
@@ -46,6 +53,11 @@ fmod PERSONA is
   op tiene-entrada : Persona -> Bool .
   eq tiene-entrada(p(N, A, E, NC, NR, D, TE)) = TE .
   eq tiene-entrada(P) = false [owise] .
+
+  *** Cantidad de gente
+  op numPersonas : Gente -> Nat .
+  eq numPersonas(nadie) = 0 .
+  eq numPersonas(P G) = 1 + numPersonas(G) .
 
   *** Definición del concepto de ordenación de persona tomando
   *** como criterio el dinero que lleva encima
@@ -76,4 +88,5 @@ red not es-mayor-de-edad(pp) .
 red tiene-entrada(eti) .
 red not tiene-entrada(billy) .
 red nacho > pp .
-red not alex <= andrea .
+red alex <= andrea .
+--- red numPersonas(pp nacho js andrea alex) == 5 .

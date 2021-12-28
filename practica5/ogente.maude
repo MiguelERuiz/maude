@@ -1,12 +1,8 @@
-fmod GENTE is
+fmod OGENTE is
   pr PERSONA .
 
-  sorts Gente OGente .
+  sorts OGente .
   subsort Persona < OGente < Gente .
-
-  *** Declaracion del tipo Gente
-  op nadie : -> OGente [ctor] .
-  op __ : Gente Gente -> Gente [ctor assoc id: nadie] .
 
   *** Definición de variables
   vars P P' : Persona .
@@ -14,20 +10,11 @@ fmod GENTE is
   var OG : OGente .
 
   *** Definición de pertenencia a la lista de gente ordenada por su dinero
+  mb nadie : OGente .
   cmb P P' G : OGente
     if P > P' /\ P' G : OGente .
 
   *** Definicion de ecuaciones
-
-  --- Cantidad de gente
-  op numPersonas : Gente -> Nat .
-  eq numPersonas(nadie) = 0 .
-  eq numPersonas(P G) = 1 + numPersonas(G) .
-
-  op ordena : Gente -> Gente .
-  ceq ordena(G P' P G') = ordena(G P P' G')
-    if P > P' .
-  eq ordena(G) = G [owise] .
 
   op insOrd : OGente Persona -> OGente .
   eq insOrd(nadie, P) = P .
@@ -52,6 +39,4 @@ fmod GENTE is
 
 endfm
 
-red ordena(pp nacho js andrea alex) .
-
-red numPersonas(pp nacho js andrea alex) == 5 .
+red insOrd(ire, alex) .
