@@ -193,13 +193,15 @@ mod PROPS is
   op hayPersonaConEntrada : String -> Prop [ctor] .
 
   *** Definición de propiedades mediante ecuaciones
-  eq S { "Local de Moda" | OG | G' | AM } |= hayGenteEnElLocal(G') = numPersonas(G') > 0 .
+  eq S { "Local de Moda" | OG | G | AM } |= hayGenteEnElLocal(G) = numPersonas(G) > 0 .
   eq S { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G' | AM } |= hayPersonaEnElLocal(N) = true .
   eq S { "Recreativos" | p(N, A, E, NC, NR, D, TE) G } |= hayPersonaEnLosRecreativos(N) = true .
-  --- TODO definir estas propiedades
   --- Hay alguien ebrio (en cualquier lugar).
+  eq S { NL | G } |= hayAlguienEbrio(G) = alguien-ebrio(G) .
+  eq S { "Local de Moda" | OG | G | AM } |= hayAlguienEbrio(G) = alguien-ebrio(G) .
   --- Hay alguien concreto ebrio (en cualquier lugar).
-  eq S { NL | P G } |= hayPersonaEbria(P) = esta-ebrio(P) .
-  eq S { "Local de Moda" | OG | P G | AM } |= hayPersonaEbria(P) = esta-ebrio(P) .
+  eq S { NL | p(N, A, E, NC, NR, D, TE) G } |= hayPersonaEbria(N) = esta-ebrio(p(N, A, E, NC, NR, D, TE)) .
+  eq S { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE)  G | AM } |= hayPersonaEbria(N) = esta-ebrio(p(N, A, E, NC, NR, D, TE)) .
+  --- TODO definir estas propiedades
   --- Hay alguien concreto con entrada.
 endm

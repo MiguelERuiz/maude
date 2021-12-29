@@ -57,6 +57,21 @@ fmod PERSONA is
   eq tiene-entrada(p(N, A, E, NC, NR, D, TE)) = TE .
   eq tiene-entrada(P) = false [owise] .
 
+  *** Verifica si una persona está ebria
+  op esta-ebrio : Persona -> Bool .
+  eq esta-ebrio(p(N, A, ebrio, NC, NR, D, TE)) = true .
+  eq esta-ebrio(P) = false [owise] .
+
+  *** Verifica si en un grupo de gente al menos una persona está ebria
+  op alguien-ebrio : Gente -> Bool .
+  eq alguien-ebrio(nadie) = false .
+  eq alguien-ebrio(P G) = if esta-ebrio(P)
+                          then
+                            true
+                          else
+                            alguien-ebrio(G)
+                          fi .
+
   *** Cantidad de gente
   op numPersonas : Gente -> Nat .
   eq numPersonas(nadie) = 0 .
@@ -73,8 +88,7 @@ fmod PERSONA is
   cmb P ; P' OG : OGente
     if P > P' /\ P' ; OG : OGente .
 
-  *** Definicion de ecuaciones
-
+  *** Ecuación para insertar personas de manera ordenada
   op insOrd : OGente Persona -> OGente .
   eq insOrd(cv, P) = P .
   eq insOrd(P ; OG, P') =
@@ -86,8 +100,7 @@ fmod PERSONA is
                       fi .
 
   --- Personas de ejemplo aka mis amig@s :D
-  ops js nacho fer eti ire pp alex andrea billy bokencio : -> Persona .
-  ops js nacho fer eti ire pp alex andrea : -> Persona .
+  ops js nacho fer eti ire pp alex andrea billy bokencio raul : -> Persona .
   eq js = p("Jotas", 22, relajado, 0, 0, 150, false) .
   eq nacho = p("Nacho", 28, relajado, 0, 0, 140, false) .
   eq fer = p("Fer", 35, relajado, 0, 0, 50, false) .
@@ -96,7 +109,9 @@ fmod PERSONA is
   eq pp = p("Pepe", 17, relajado, 0, 0, 70, false) .
   eq alex = p("Alex", 21, relajado, 0, 0, 180, false) .
   eq andrea = p("Andrea", 23, relajado, 0, 0, 190, false) .
+  eq billy = p("Billy el relaciones", trabajando, 2, 5) .
   eq bokencio = bokencio("Bokencio el puerta", trabajando, 100) .
+  eq raul = p("Raul", 30, ebrio, 10, 0, 0, true) .
 
 endfm
 
@@ -109,5 +124,10 @@ red tiene-entrada(eti) .
 red not tiene-entrada(billy) .
 red nacho > pp .
 red alex <= andrea .
+red esta-ebrio(raul) .
+red not esta-ebrio(pp) .
+red not esta-ebrio(bokencio) .
+red not alguien-ebrio(fer eti js) .
+red alguien-ebrio(bokencio raul billy) .
 red numPersonas(pp nacho js andrea alex) == 5 .
 red insOrd(insOrd(insOrd(andrea, ire), pp), alex) .
