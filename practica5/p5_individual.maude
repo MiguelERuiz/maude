@@ -185,7 +185,7 @@ mod PROPS is
   var NL : String . --- Nombre del lugar
 
   *** Definicion de propiedades
-  op hayGenteEnElLocal : Gente -> Prop [ctor] .
+  op hayGenteEnElLocal : -> Prop [ctor] .
   op hayPersonaEnElLocal : String -> Prop [ctor] .
   op hayPersonaEnLosRecreativos : String -> Prop [ctor] .
   op hayAlguienEbrio : Gente -> Prop [ctor] .
@@ -193,7 +193,7 @@ mod PROPS is
   op hayPersonaConEntrada : String -> Prop [ctor] .
 
   *** Definición de propiedades mediante ecuaciones
-  eq S { "Local de Moda" | OG | G | AM } |= hayGenteEnElLocal(G) = numPersonas(G) > 0 .
+  eq S { "Local de Moda" | OG | G | AM } |= hayGenteEnElLocal = numPersonas(G) > 1 . --- Sin contar a Bokencio
   eq S { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE) G' | AM } |= hayPersonaEnElLocal(N) = true .
   eq S { "Recreativos" | p(N, A, E, NC, NR, D, TE) G } |= hayPersonaEnLosRecreativos(N) = true .
   --- Hay alguien ebrio (en cualquier lugar).
@@ -202,6 +202,27 @@ mod PROPS is
   --- Hay alguien concreto ebrio (en cualquier lugar).
   eq S { NL | p(N, A, E, NC, NR, D, TE) G } |= hayPersonaEbria(N) = esta-ebrio(p(N, A, E, NC, NR, D, TE)) .
   eq S { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE)  G | AM } |= hayPersonaEbria(N) = esta-ebrio(p(N, A, E, NC, NR, D, TE)) .
-  --- TODO definir estas propiedades
   --- Hay alguien concreto con entrada.
+  eq S { NL | p(N, A, E, NC, NR, D, TE) G } |= hayPersonaConEntrada(N) = TE .
+  eq S { "Local de Moda" | OG | p(N, A, E, NC, NR, D, TE)  G | AM } |= hayPersonaConEntrada(N) = TE .
 endm
+
+mod TEST is
+  *** Importa los modulos correspondientes
+  pr PROPS .
+  pr LTL-SIMPLIFIER .
+  pr MODEL-CHECKER .
+  pr EJEMPLO .
+
+endm
+
+*** Ejercicio 3
+--- Tarde o temprano el local se vacía y permanece vacío para siempre.
+red modelCheck(init, <> ~ hayGenteEnElLocal) .
+--- Si una persona concreta pasa a estado ebrio permanecerá siempre en él.
+red modelCheck(init, [] (hayPersonaEbria("Pepe") -> hayPersonaEbria("Pepe"))) .
+--- Si una persona concreta está en el local entonces tiene entrada.
+red modelCheck(init, [] (hayPersonaEnElLocal("Nacho") -> hayPersonaConEntrada("Nacho"))) .
+--- FIX esta propiedad da un contra-ejemplo un poco raro
+--- Nunca nadie con entrada va a los recreativos.
+--- red modelCheck(init, [] (hayPersonaConEntrada("Pepe") -> ~ hayPersonaEnLosRecreativos("Pepe"))) .
