@@ -223,6 +223,6 @@ red modelCheck(init, <> ~ hayGenteEnElLocal) .
 red modelCheck(init, [] (hayPersonaEbria("Pepe") -> hayPersonaEbria("Pepe"))) .
 --- Si una persona concreta está en el local entonces tiene entrada.
 red modelCheck(init, [] (hayPersonaEnElLocal("Nacho") -> hayPersonaConEntrada("Nacho"))) .
---- FIX esta propiedad da un contra-ejemplo un poco raro
 --- Nunca nadie con entrada va a los recreativos.
---- red modelCheck(init, [] (hayPersonaConEntrada("Pepe") -> ~ hayPersonaEnLosRecreativos("Pepe"))) .
+--- TODO explicar el resultado de esta propiedad
+red modelCheck(init, [] (hayPersonaConEntrada("Pepe") -> ~ hayPersonaEnLosRecreativos("Pepe"))) .
