@@ -1,0 +1,20 @@
+digraph G {
+  {
+    node [shape = point ]; qi
+    node [shape = ellipse ]
+    zona_residencial [label="Zona residencial"]
+    plaza_mayor [label="Plaza Mayor"]
+    local_de_moda [label="Local de moda"]
+    recreativos [label="Recreativos"]
+  }
+  qi -> zona_residencial
+  zona_residencial -> plaza_mayor
+  zona_residencial -> local_de_moda
+  zona_residencial -> recreativos
+  plaza_mayor -> local_de_moda
+  plaza_mayor -> local_de_moda [dir=back]
+  local_de_moda -> zona_residencial
+  plaza_mayor -> recreativos
+  recreativos -> zona_residencial
+
+}

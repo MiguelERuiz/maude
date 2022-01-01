@@ -1,0 +1,133 @@
+fmod PERSONA is
+  pr STRING .
+
+  sorts Persona Estado Gente OGente .
+
+  subsort Persona < Gente OGente .
+
+  *** Declaracion de los tipos de estado en los que se puede
+  *** encontrar una persona
+  ops relajado trabajando ebrio cansado-pero-contento humillado satisfecho : -> Estado [ctor] .
+
+  *** Declaracion del tipo Persona (generica)
+  --- p(Nombre::Str, Edad::Nat, E::Estado, NumCopas::Nat, NumRefrescos::Nat, Dinero::Nat, TieneEntrada?::Bool)
+  op p : String Nat Estado Nat Nat Nat Bool -> Persona [ctor] .
+
+  *** Billy el relaciones
+  --- billy(Nombre::Str, E::Estado, NumEntradas::Nat, PrecioEntrada::Nat)
+  op billy : String Estado Nat Nat -> Persona [ctor] .
+
+  *** Bokencio el puerta
+  --- bokencio(Nombre::Str, E::Estado, Dinero::Nat)
+  op bokencio : String Estado Nat -> Persona [ctor] .
+
+  *** Declaracion de los tipos Gente y OGente
+  op nadie : -> Gente [ctor] .
+  op cv : -> OGente [ctor] . --- Cola vacia
+  op __ : Gente Gente -> Gente [ctor assoc comm id: nadie] .
+  op _;_ : OGente OGente -> OGente [ctor assoc id: cv ] .
+
+  *** Declaracion de variables
+  vars P P' : Persona .
+  var G : Gente .
+  var OG : OGente .
+  vars N N' : String .
+  vars A A' : Nat .
+  vars NC NC' NR NR' : Nat .
+  vars D D' : Nat .
+  var NE : Nat .
+  vars TE TE' : Bool .
+  vars E E' : Estado .
+
+  *** Verifica que una persona no es ni Billy ni Bokencio
+  op es-persona-generica : Persona -> Bool .
+  eq es-persona-generica(p(N, A, E, NC, NR, D, TE)) = true .
+  eq es-persona-generica(P) = false [owise] .
+
+  *** Devuelve la edad de una persona
+  op edad : Persona ~> Nat .
+  eq edad(p(N, A, E, NC, NR, D, TE)) = A .
+
+  *** Verifica que si una persona es mayor de edad
+  op es-mayor-de-edad : Persona -> Bool .
+  eq es-mayor-de-edad(P) = edad(P) >= 18 .
+
+  *** Verifica que una persona tiene entrada
+  op tiene-entrada : Persona -> Bool .
+  eq tiene-entrada(p(N, A, E, NC, NR, D, TE)) = TE .
+  eq tiene-entrada(P) = false [owise] .
+
+  *** Verifica si una persona está ebria
+  op esta-ebrio : Persona -> Bool .
+  eq esta-ebrio(p(N, A, ebrio, NC, NR, D, TE)) = true .
+  eq esta-ebrio(P) = false [owise] .
+
+  *** Verifica si en un grupo de gente al menos una persona está ebria
+  op alguien-ebrio : Gente -> Bool .
+  eq alguien-ebrio(nadie) = false .
+  eq alguien-ebrio(P G) = if esta-ebrio(P)
+                          then
+                            true
+                          else
+                            alguien-ebrio(G)
+                          fi .
+
+  *** Cantidad de gente
+  op numPersonas : Gente -> Nat .
+  eq numPersonas(nadie) = 0 .
+  eq numPersonas(P G) = 1 + numPersonas(G) .
+
+  *** Definición del concepto de ordenación de persona tomando
+  *** como criterio el dinero que lleva encima
+  ops _<=_ _>_ : Persona Persona -> Bool .
+  eq p(N, A, E, NC, NR, D, TE) <= p(N', A', E', NC', NR', D', TE') = D <= D' .
+  eq p(N, A, E, NC, NR, D, TE) > p(N', A', E', NC', NR', D', TE') = D > D' .
+
+  *** Definición de pertenencia a la lista de gente ordenada por su dinero
+  mb cv : OGente .
+  cmb P ; P' OG : OGente
+    if P > P' /\ P' ; OG : OGente .
+
+  *** Ecuación para insertar personas de manera ordenada
+  op insOrd : OGente Persona -> OGente .
+  eq insOrd(cv, P) = P .
+  eq insOrd(P ; OG, P') =
+                      if P > P'
+                      then
+                        P ; insOrd(OG, P')
+                      else
+                        P' ; P ; OG
+                      fi .
+
+  --- Personas de ejemplo aka mis amig@s :D
+  ops js nacho fer eti ire pp alex andrea billy bokencio raul : -> Persona .
+  eq js = p("Jotas", 22, relajado, 0, 0, 150, false) .
+  eq nacho = p("Nacho", 28, relajado, 0, 0, 140, false) .
+  eq fer = p("Fer", 35, relajado, 0, 0, 50, false) .
+  eq eti = p("Eti", 34, relajado, 0, 0, 160, true) .
+  eq ire = p("Ire", 27, relajado, 0, 0, 130, false) .
+  eq pp = p("Pepe", 17, relajado, 0, 0, 70, false) .
+  eq alex = p("Alex", 21, relajado, 0, 0, 180, false) .
+  eq andrea = p("Andrea", 23, relajado, 0, 0, 190, false) .
+  eq billy = p("Billy el relaciones", trabajando, 2, 5) .
+  eq bokencio = bokencio("Bokencio el puerta", trabajando, 100) .
+  eq raul = p("Raul", 30, ebrio, 10, 0, 0, true) .
+
+endfm
+
+red es-persona-generica(nacho) .
+red not es-persona-generica(billy) .
+red not es-persona-generica(bokencio) .
+red edad(ire) == 27 .
+red not es-mayor-de-edad(pp) .
+red tiene-entrada(eti) .
+red not tiene-entrada(billy) .
+red nacho > pp .
+red alex <= andrea .
+red esta-ebrio(raul) .
+red not esta-ebrio(pp) .
+red not esta-ebrio(bokencio) .
+red not alguien-ebrio(fer eti js) .
+red alguien-ebrio(bokencio raul billy) .
+red numPersonas(pp nacho js andrea alex) == 5 .
+red insOrd(insOrd(insOrd(andrea, ire), pp), alex) .

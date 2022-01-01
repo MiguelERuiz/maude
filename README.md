@@ -1,7 +1,7 @@
 # maude
 Practicas de Maude de ACFI
 
-## Práctica 4
+## Prácticas 4 y 5
 Ejecutar la práctica
 
     $ maude run.maude
