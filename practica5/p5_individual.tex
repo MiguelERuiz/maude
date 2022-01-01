@@ -48,7 +48,33 @@
   \end{figure}
 
   \section*{Ejercicio 4}
-
   % Hablar sobre las reglas que no pueden convertirse en ecuaciones
   % indicando los motivos, así como las que sí se pueden
+  Para poder transformar reglas en ecuaciones, aquellas reglas que se deseen
+  transformar han de cumplir que sean terminantes y deterministas, es decir, no
+  han de formar bucles y deben confluir siempre en un solo estado, respectivamente.
+
+  Partiendo de esta idea, en el sistema que ha sido definido hay reglas que
+  no podrán ser convertidas a reglas porque no cumplen las propiedades, como
+  son las reglas de \texttt{hacer-cola-local-de-moda}, \texttt{hacer-cola-local-de-moda-2},
+  \texttt{ir-a-recreativos-desde-pza-mayor} y \texttt{volver-a-plaza-mayor}, puesto
+  que estas reglas forman un bucle en el cual una persona genérica puede estar
+  infinitamente pasando de un lugar a otro. Tampoco lo serían las reglas de
+  \texttt{ir-a-plaza-mayor} ni \texttt{ir-a-recreativos} puesto que junto a la
+  regla de \texttt{hacer-cola-local-de-moda-2} hacen que no sea deterministas, ya
+  que desde la zona residencial se puede ir o a la plaza mayor, al local de moda
+  o a los recreativos. Las otras reglas que tampoco cumplen las propiedades son
+  \texttt{cruzarse-ebrio-con-bokencio} y \texttt{volver-a-casa-cansado-pero-contento},
+  y \texttt{jugar-a-dobles}.
+
+  Ahora bien, una regla que sí podría convertirse en ecuación es la de
+  \texttt{entrar-local-de-moda}, puesto que es una regla que no forma bucles,
+  luego cumple que sea terminante, y adicionalmente es determinista, porque
+  se transita a otro estado bajo las condiciones de que la persona que quiera
+  entrar tenga entrada, sea mayor de edad y el aforo del local no esté completo.
+  Otras reglas que podrían ser convertidas a ecuaciones son las de \texttt{beber-copa},
+  \texttt{beber-refresco} y \texttt{bokencio-bebe-refresco}. Las otra regla que
+  también cumple con las propiedades de ser determinista y terminante es la
+  de \texttt{comprar-entrada}.
+
 \end{document}
